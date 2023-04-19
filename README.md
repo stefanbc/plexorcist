@@ -26,13 +26,13 @@ In other words it's a small Python script that clears a specific Plex Media Serv
 Clone Plexorcist
 
 ```bash
-  git clone https://github.com/stefanbc/plexorcist.git
+  git clone https://github.com/stefanbc/Plexorcist.git
 ```
 
 Open Plexorcist
 
 ```bash
-  cd plexorcist
+  cd Plexorcist
 ```
 
 Install the dependencies
@@ -58,7 +58,7 @@ Dry-run Plexorcist
 
 ## Documentation
 
-[Documentation](https://github.com/stefanbc/plexorcist/wiki)
+[Documentation](https://github.com/stefanbc/Plexorcist/wiki)
 
 
 ## Contributing
@@ -77,4 +77,4 @@ Please adhere to this project's `code of conduct`.
 
 ## License
 
-[MIT](https://github.com/stefanbc/plexorcist/blob/main/LICENSE)
+[MIT](https://github.com/stefanbc/Plexorcist/blob/main/LICENSE)
