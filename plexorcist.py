@@ -13,29 +13,36 @@ with open('plexorcist.config.json', 'r') as config_file:
     config = json.load(config_file)
 
 # Set the script properties
-PLEX_HOSTNAME = config['PLEX_HOSTNAME']
+PLEX_HOSTNAME = f"http://{config['PLEX_HOSTNAME']}:{config['PLEX_PORT']}"
 PLEX_TOKEN = config['PLEX_TOKEN']
 PLEX_LIBRARY = config['PLEX_LIBRARY']
 IFTTT_WEBHOOK = config['IFTTT_WEBHOOK']
-BLACKLIST = config['BLACKLIST']
+WHITELIST = config['WHITELIST']
 
 # Set the log file name
 LOG_FILE = 'plexorcist.log'
+
+# Create file if it's missing
+if not os.path.isfile(LOG_FILE):
+    # Create an empty file
+    open(LOG_FILE, 'w').close()
+
+# Size check
 LOG_FILE_MAX_SIZE = 2000000 # 2 MB
 LOG_FILE_CURRENT_SIZE = os.path.getsize(LOG_FILE)
 
+# Check if the log file is larger than LOG_FILE_MAX_SIZE and empty it
+if LOG_FILE_CURRENT_SIZE > LOG_FILE_MAX_SIZE:
+    with open(LOG_FILE, "w") as log_file:
+        log_file.truncate(0)
+
 # Main plexorcise method
 def plexorcise():
-    # Check if the log file is larger than LOG_FILE_MAX_SIZE and empty it
-    if LOG_FILE_CURRENT_SIZE > LOG_FILE_MAX_SIZE:
-        with open(LOG_FILE, "w") as log_file:
-            log_file.truncate(0)
-
     # Set the current timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Fetch the Plex data
-    response = requests.get(f"{PLEX_HOSTNAME}/library/sections/{int(PLEX_LIBRARY)}/allLeaves", headers={"X-Plex-Token": PLEX_TOKEN})
+    response = requests.get(f"{PLEX_HOSTNAME}/library/sections/{PLEX_LIBRARY}/allLeaves", headers={"X-Plex-Token": PLEX_TOKEN})
     data = xmltodict.parse(response.content)
     videos = data['MediaContainer']['Video']
 
@@ -52,32 +59,38 @@ def plexorcise():
         # Delete watched videos and send notification
         if watched_videos:
             watched_titles = []
+            space_reclaimed_in_mb = 0
 
-            # Delete watched videos if not included in blacklist
+            # Delete watched videos if not included in WHITELIST
             for video in watched_videos:
                 series = video['@grandparentTitle']
                 title = f"{video['@grandparentTitle']} - {video['@title']}"
+                size_in_bytes = int(video['Media']['Part']['@size'])
+                size_in_mb = size_in_bytes / (1024 * 1024)
 
-                if series not in BLACKLIST:
+                if series not in WHITELIST:
                     url = PLEX_HOSTNAME + video['@key']
 
                     watched_titles.append(title)
+                    space_reclaimed_in_mb += round(size_in_mb, 2)
                     requests.delete(url, headers={"X-Plex-Token": PLEX_TOKEN})
                 else:
                     with open(LOG_FILE, 'a') as log_file:
-                        log_file.write(f'{timestamp} - {title} is blacklisted!\n')
+                        log_file.write(f'{timestamp} - {title} is whitelisted!\n')
+
+            space_reclaimed_in_gb = round(space_reclaimed_in_mb / 1024, 2)
 
             # Write to log file
             with open(LOG_FILE, 'a') as log_file:
-                log_file.write(f"{timestamp} - {len(watched_videos)} watched episodes were removed:\n")
+                log_file.write(f"{timestamp} - {len(watched_videos)} watched episodes were removed and {space_reclaimed_in_gb} GB reclaimed:\n")
                 log_file.write('\n'.join(watched_titles))
                 log_file.write('\n')
 
             # Send notification if IFTTT url is set
             webhook_url = urllib.parse.urlparse(IFTTT_WEBHOOK)
-            if webhook_url.scheme and webhook_url.netloc:
+            if "maker.ifttt.com" in IFTTT_WEBHOOK and webhook_url.scheme and webhook_url.netloc:
                 notification = {
-                    'value1': f"{len(watched_videos)} watched episodes were removed!\n" + '\n'.join(watched_titles)
+                    'value1': f"{len(watched_videos)} watched episodes were removed and {space_reclaimed_in_gb} GB reclaimed:\n" + '\n'.join(watched_titles)
                 }
                 requests.post(IFTTT_WEBHOOK, json=notification)
 
