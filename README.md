@@ -44,7 +44,7 @@ Install the dependencies
 Give permissions to Plexorcist
 
 ```bash
-chmod +x plexorcist.py
+  chmod +x plexorcist.py
 ```
 
 Before running Plexorcist for the first time please read the [Documentation](#documentation)
