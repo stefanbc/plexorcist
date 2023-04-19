@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import requests
 import json
 import xmltodict
 import urllib.parse
 from datetime import datetime
+
+# Check if cast is triggered
+cast = "--cast" in sys.argv
 
 # Read the JSON config file
 with open('plexorcist.config.json', 'r') as config_file:
@@ -99,10 +103,17 @@ def plexorcise():
             else:
                 with open(LOG_FILE, 'a') as log_file:
                     log_file.write(f'{timestamp} - IFTTT Webhook URL not set!\n')
-
         else:
             with open(LOG_FILE, 'a') as log_file:
                 log_file.write(f'{timestamp} - No videos to delete!\n')
+
+        # Open the log file in read mode
+        if cast:
+            with open(LOG_FILE, 'r') as log_file:
+                # Read the contents of the log file
+                contents = log_file.read()
+                # Print the contents to the console
+                print(contents)
 
 if __name__ == '__main__':
     plexorcise()
