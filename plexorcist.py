@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 """Main Plexorcist execution file!"""
 
-import sys
 import json
 import urllib.parse
 import logging
 from logging.handlers import RotatingFileHandler
 import requests
 import xmltodict
-
-# Check if cast is triggered
-CAST = "--cast" in sys.argv
 
 # Read the JSON config file
 with open("plexorcist.config.json", "r", encoding="utf8") as config_file:
@@ -66,14 +62,6 @@ def handle_videos(response):
 
             # Delete watched videos and send notification
             delete_videos(watched_videos=watched_videos, media_type=media_type)
-
-            # Open the log file in read mode
-            if CAST:
-                with open(LOG_FILE, "r", encoding="utf8") as log_file:
-                    # Read the contents of the log file
-                    contents = log_file.read()
-                    # Print the contents to the console
-                    print(contents)
 
 
 def filter_videos(videos):

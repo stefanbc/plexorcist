@@ -20,7 +20,6 @@ In other words it's a small Python script that clears a specific Plex Media Serv
   - Requests error handling
 - IFTTT integration (via webhook)
 - Movies or TV Shows whitelist
-- Dry run the script and output the result in console
 
 ## Installation
 
