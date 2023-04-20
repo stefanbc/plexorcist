@@ -49,6 +49,7 @@ def plexorcise():
     response = requests.get(f"{PLEX_HOSTNAME}/library/sections/{PLEX_LIBRARY}/allLeaves", headers={"X-Plex-Token": PLEX_TOKEN})
     data = xmltodict.parse(response.content)
     videos = data['MediaContainer']['Video']
+    media_type = data['MediaContainer']['@viewGroup']
 
     if videos:
         watched_videos = []
@@ -67,12 +68,12 @@ def plexorcise():
 
             # Delete watched videos if not included in WHITELIST
             for video in watched_videos:
-                series = video['@grandparentTitle']
-                title = f"{video['@grandparentTitle']} - {video['@title']}" if video['@type'] == "episode" else video['@title']
+                series = video['@grandparentTitle'] if video.get('@grandparentTitle') else ""
+                title = f"{series} - {video['@title']}" if media_type == "show" else video['@title']
                 size_in_bytes = int(video['Media']['Part']['@size'])
                 size_in_mb = size_in_bytes / (1024 * 1024)
 
-                if series not in WHITELIST:
+                if series not in WHITELIST or title not in WHITELIST:
                     url = PLEX_HOSTNAME + video['@key']
 
                     watched_titles.append(title)
