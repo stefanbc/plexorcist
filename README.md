@@ -50,18 +50,12 @@ Give permissions to Plexorcist
   chmod +x plexorcist.py
 ```
 
-Before running Plexorcist for the first time please read the [Documentation](#documentation)
-
-Dry-run Plexorcist
-
-```bash
-  ./plexorcist.py --cast
-```
+Before running Plexorcist for the first time please read the [Documentation](#documentation).
 
 
 ## Documentation
 
-[Documentation](https://github.com/stefanbc/Plexorcist/wiki/Sanctuary)
+[Documentation](https://github.com/stefanbc/Plexorcist/wiki)
 
 
 ## Contributing
