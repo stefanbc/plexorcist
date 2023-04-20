@@ -13,10 +13,6 @@
         "REMOVED": "{} watched videos were removed and {} GB reclaimed:",
         "NOTIFICATION": "Notification sent!",
         "IFTTT_ERROR": "IFTTT Webhook URL not set!",
-        "NO_VIDEOS": "No videos to delete!",
-        "HTTPError": "HTTP error occurred: {}",
-        "ConnectionError": "Error connecting: {}",
-        "Timeout": "Timeout error occurred: {}",
-        "RequestException": "An error occurred: {}"
+        "NO_VIDEOS": "No videos to delete!"
     }
 }
