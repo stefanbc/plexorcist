@@ -40,96 +40,119 @@ if LOG_FILE_CURRENT_SIZE > LOG_FILE_MAX_SIZE:
     with open(LOG_FILE, "w") as log_file:
         log_file.truncate(0)
 
+# Set the current timestamp
+TIMESTAMP = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
 # Main plexorcise method
 def plexorcise():
-    data = {}
-    videos = []
-    media_type = ""
-
-    # Set the current timestamp
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
     # Fetch the Plex data
-    try:
-        response = requests.get(f"{PLEX_HOSTNAME}/library/sections/{PLEX_LIBRARY}/allLeaves", headers={"X-Plex-Token": PLEX_TOKEN})
-        response.raise_for_status()  # Raise an exception for non-2xx responses
+    response = make_request(url=f"{PLEX_HOSTNAME}/library/sections/{PLEX_LIBRARY}/allLeaves", headers={"X-Plex-Token": PLEX_TOKEN})
 
-        data = xmltodict.parse(response.content)
+    if response != None:
+        data = xmltodict.parse(response)
         videos = data['MediaContainer']['Video']
         media_type = data['MediaContainer']['@viewGroup']
-    except requests.exceptions.HTTPError as err:
-        print(f"HTTP error occurred: {err}")
-    except requests.exceptions.ConnectionError as err:
-        print(f"Error connecting: {err}")
-    except requests.exceptions.Timeout as err:
-        print(f"Timeout error occurred: {err}")
-    except requests.exceptions.RequestException as err:
-        print(f"An error occurred: {err}")
 
-    if videos and len(videos) > 0:
-        watched_videos = []
+        if videos and len(videos) > 0:
+            watched_videos = []
 
-        # Filter watched videos
-        if isinstance(videos, list):
-            watched_videos = [video for video in videos if video.get('@viewCount') and int(video['@viewCount']) >= 1]
-        else:
-            if videos.get('@viewCount') and int(videos['@viewCount']) >= 1:
-                watched_videos.append(videos)
+            # Filter watched videos
+            if isinstance(videos, list):
+                watched_videos = [video for video in videos if video.get('@viewCount') and int(video['@viewCount']) >= 1]
+            else:
+                if videos.get('@viewCount') and int(videos['@viewCount']) >= 1:
+                    watched_videos.append(videos)
 
-        # Delete watched videos and send notification
-        if watched_videos and len(watched_videos) > 0:
-            watched_titles = []
-            space_reclaimed_in_mb = 0
+            # Delete watched videos and send notification
+            if watched_videos and len(watched_videos) > 0:
+                watched_titles = []
+                space_reclaimed_in_mb = 0
 
-            # Delete watched videos if not included in WHITELIST
-            for video in watched_videos:
-                series = video['@grandparentTitle'] if video.get('@grandparentTitle') else ""
-                title = f"{series} - {video['@title']}" if media_type == "show" else video['@title']
-                size_in_bytes = int(video['Media']['Part']['@size'])
-                size_in_mb = size_in_bytes / (1024 * 1024)
+                # Delete watched videos if not included in WHITELIST
+                for video in watched_videos:
+                    series = video['@grandparentTitle'] if video.get('@grandparentTitle') else ""
+                    title = f"{series} - {video['@title']}" if media_type == "show" else video['@title']
+                    size_in_bytes = int(video['Media']['Part']['@size'])
+                    size_in_mb = size_in_bytes / (1024 * 1024)
 
-                if series not in WHITELIST or title not in WHITELIST:
-                    url = PLEX_HOSTNAME + video['@key']
+                    if series not in WHITELIST or title not in WHITELIST:
+                        url = PLEX_HOSTNAME + video['@key']
 
-                    watched_titles.append(title)
-                    space_reclaimed_in_mb += round(size_in_mb, 2)
-                    requests.delete(url, headers={"X-Plex-Token": PLEX_TOKEN})
+                        watched_titles.append(title)
+                        space_reclaimed_in_mb += round(size_in_mb, 2)
+                        make_request(url=url, headers={"X-Plex-Token": PLEX_TOKEN}, request_type="delete")
+                    else:
+                        with open(LOG_FILE, 'a') as log_file:
+                            log_file.write(f"{TIMESTAMP} - {title} is whitelisted!\n")
+
+                space_reclaimed_in_gb = round(space_reclaimed_in_mb / 1024, 2)
+
+                # Write to log file
+                with open(LOG_FILE, 'a') as log_file:
+                    log_file.write(f"{TIMESTAMP} - {len(watched_videos)} watched videos were removed and {space_reclaimed_in_gb} GB reclaimed:\n")
+                    log_file.write('\n'.join(watched_titles))
+                    log_file.write('\n')
+
+                # Send notification if IFTTT URL is set
+                webhook_url = urllib.parse.urlparse(IFTTT_WEBHOOK)
+                if "maker.ifttt.com" in IFTTT_WEBHOOK and webhook_url.scheme and webhook_url.netloc:
+                    notification = {
+                        'value1': f"{len(watched_videos)} watched videos were removed and {space_reclaimed_in_gb} GB reclaimed:\n" + '\n'.join(watched_titles)
+                    }
+                    make_request(url=IFTTT_WEBHOOK, json=notification, request_type="post")
+
+                    with open(LOG_FILE, 'a') as log_file:
+                        log_file.write(f"{TIMESTAMP} - Notification sent!\n")
                 else:
                     with open(LOG_FILE, 'a') as log_file:
-                        log_file.write(f'{timestamp} - {title} is whitelisted!\n')
-
-            space_reclaimed_in_gb = round(space_reclaimed_in_mb / 1024, 2)
-
-            # Write to log file
-            with open(LOG_FILE, 'a') as log_file:
-                log_file.write(f"{timestamp} - {len(watched_videos)} watched videos were removed and {space_reclaimed_in_gb} GB reclaimed:\n")
-                log_file.write('\n'.join(watched_titles))
-                log_file.write('\n')
-
-            # Send notification if IFTTT URL is set
-            webhook_url = urllib.parse.urlparse(IFTTT_WEBHOOK)
-            if "maker.ifttt.com" in IFTTT_WEBHOOK and webhook_url.scheme and webhook_url.netloc:
-                notification = {
-                    'value1': f"{len(watched_videos)} watched videos were removed and {space_reclaimed_in_gb} GB reclaimed:\n" + '\n'.join(watched_titles)
-                }
-                requests.post(IFTTT_WEBHOOK, json=notification)
-
-                with open(LOG_FILE, 'a') as log_file:
-                    log_file.write(f'{timestamp} - Notification sent!\n')
+                        log_file.write(f"{TIMESTAMP} - IFTTT Webhook URL not set!\n")
             else:
                 with open(LOG_FILE, 'a') as log_file:
-                    log_file.write(f'{timestamp} - IFTTT Webhook URL not set!\n')
+                    log_file.write(f"{TIMESTAMP} - No videos to delete!\n")
+
+            # Open the log file in read mode
+            if cast:
+                with open(LOG_FILE, 'r') as log_file:
+                    # Read the contents of the log file
+                    contents = log_file.read()
+                    # Print the contents to the console
+                    print(contents)
+
+def make_request(**kwargs):
+    url = kwargs.get('url')
+    headers = kwargs.get('headers')
+    json = kwargs.get('json')
+    request_type = kwargs.get('request_type', 'get')
+
+    exception = ""
+    response = None
+
+    try:
+        if request_type == 'delete':
+            response = requests.delete(url, headers=headers)
+        elif request_type == 'post':
+            response = requests.post(url, json=json)
+        else:
+            response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Raise an exception for non-2xx responses
+        return response.content
+    except requests.exceptions.HTTPError as err:
+        exception = f"HTTP error occurred: {err}"
+    except requests.exceptions.ConnectionError as err:
+        exception = f"Error connecting: {err}"
+    except requests.exceptions.Timeout as err:
+        exception = f"Timeout error occurred: {err}"
+    except requests.exceptions.RequestException as err:
+        exception = f"An error occurred: {err}"
+
+    if exception != "":
+        if cast:
+            print(exception)
         else:
             with open(LOG_FILE, 'a') as log_file:
-                log_file.write(f'{timestamp} - No videos to delete!\n')
+                log_file.write(f"{TIMESTAMP} - {exception}\n")
 
-        # Open the log file in read mode
-        if cast:
-            with open(LOG_FILE, 'r') as log_file:
-                # Read the contents of the log file
-                contents = log_file.read()
-                # Print the contents to the console
-                print(contents)
+        return None
 
 if __name__ == '__main__':
     plexorcise()
