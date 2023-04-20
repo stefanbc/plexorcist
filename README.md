@@ -12,7 +12,7 @@ In other words it's a small Python script that clears a specific Plex Media Serv
 
 - Suppport for Movies or TV Shows
 - JSON config file
-- I18N (via config file)
+- I18N (via config file) - [feeling fancy?](https://github.com/stefanbc/Plexorcist/wiki/I18N---King-James-Version)
 - Log file
     - Automatic creation and cleanup when file gets too big (2 MB)
     - Logs the timestamp for all actions
