@@ -6,7 +6,7 @@
     "IFTTT_WEBHOOK": "<your_ifttt_webhook_url_here>",
     "WHITELIST": [
         "SERIES 1",
-        "SERIES 2"
+        "MOVIE 1"
     ],
     "I18N": {
         "WHITELISTED": "{} - {} is whitelisted!",
