@@ -61,7 +61,7 @@ Dry-run Plexorcist
 
 ## Documentation
 
-[Documentation](https://github.com/stefanbc/Plexorcist/wiki)
+[Documentation](https://github.com/stefanbc/Plexorcist/wiki/Sanctuary)
 
 
 ## Contributing
