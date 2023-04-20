@@ -1,7 +1,7 @@
 
 # Plexorcist
 
-Plexorcist banishes your binge-watching ghosts and unclutters your Plex graveyard of watched videos!
+The Plexorcist banishes your binge-watching ghosts and unclutters your watched videos graveyard, bringing order and harmony to your Plex experience!
 
 In other words it's a small Python script that clears a specific Plex Media Server library of all watched videos.
 
