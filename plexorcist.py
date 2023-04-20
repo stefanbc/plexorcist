@@ -187,7 +187,7 @@ def make_request(**kwargs):
         if CAST:
             print(exception)
         else:
-            with open(LOG_FILE, "a") as log_file:
+            with open(LOG_FILE, "a", encoding="utf8") as log_file:
                 log_file.write(f"{TIMESTAMP} - {exception}\n")
 
         return None
