@@ -1,5 +1,6 @@
+[![Pylint](https://github.com/stefanbc/Plexorcist/actions/workflows/pylint.yml/badge.svg)](https://github.com/stefanbc/Plexorcist/actions/workflows/pylint.yml)
 
-# Plexorcist [![Pylint](https://github.com/stefanbc/Plexorcist/actions/workflows/pylint.yml/badge.svg)](https://github.com/stefanbc/Plexorcist/actions/workflows/pylint.yml)
+# Plexorcist
 
 The Plexorcist banishes your binge-watching ghosts and unclutters your watched videos graveyard, bringing order and harmony to your Plex experience!
 
