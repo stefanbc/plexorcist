@@ -10,17 +10,17 @@ In other words it's a small Python script that clears a specific Plex Media Serv
 ## Features
 
 - Suppport for Movies or TV Shows
-- JSON config file
+- [JSON config file](https://github.com/stefanbc/Plexorcist/wiki/Configuration)
 - I18N (via config file) - [feeling fancy?](https://github.com/stefanbc/Plexorcist/wiki/I18N---King-James-Version)
-- Log file
-  - Automatic creation and cleanup when file gets too big (2 MB)
+- Logging
+  - Automatic creation and cleanup when file gets too big (1 MB)
   - Logs the timestamp for all actions
   - Logs the name of the Movie or TV Show (including episode title)
   - Logs the space reclaimed after deletion
+  - Requests error handling
 - IFTTT integration (via webhook)
 - Movies or TV Shows whitelist
 - Dry run the script and output the result in console
-- Requests error handling
 
 ## Installation
 
