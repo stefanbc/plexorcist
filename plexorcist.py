@@ -162,7 +162,7 @@ def make_request(**kwargs):
     request_json = kwargs.get("json")
     request_type = kwargs.get("request_type", "get")
 
-    exception = ""
+    exception = None
     response = None
 
     try:
@@ -173,7 +173,6 @@ def make_request(**kwargs):
         else:
             response = requests.get(request_url, headers=request_headers, timeout=10)
         response.raise_for_status()  # Raise an exception for non-2xx responses
-        return response.content
     except requests.exceptions.HTTPError as err:
         exception = f"{I18N['HTTPError'].format(err)}"
     except requests.exceptions.ConnectionError as err:
@@ -190,7 +189,9 @@ def make_request(**kwargs):
             with open(LOG_FILE, "a", encoding="utf8") as log_file:
                 log_file.write(f"{TIMESTAMP} - {exception}\n")
 
-        return None
+        return exception
+
+    return response.content
 
 
 if __name__ == "__main__":
