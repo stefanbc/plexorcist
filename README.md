@@ -10,16 +10,18 @@ In other words it's a small Python script that clears a specific Plex Media Serv
 
 ## Features
 
-- Suppport for Movies and TV Shows
+- Suppport for Movies and / or TV Shows
 - JSON config file
+- I18N (via config file)
 - Log file
-    - Automatic creation and cleanup when file gets too big
+    - Automatic creation and cleanup when file gets too big (2 MB)
     - Logs the timestamp for all actions
     - Logs the name of the Movie or TV Show (including episode title)
     - Logs the space reclaimed after deletion
 - IFTTT integration (via webhook)
 - Movies and / or TV Shows whitelist
-- Dry run the script and output the result via argument
+- Dry run the script and output the result in console
+- Requests error handling
 
 
 ## Installation

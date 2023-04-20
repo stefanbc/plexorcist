@@ -22,6 +22,7 @@ PLEX_TOKEN = config['PLEX_TOKEN']
 PLEX_LIBRARY = config['PLEX_LIBRARY']
 IFTTT_WEBHOOK = config['IFTTT_WEBHOOK']
 WHITELIST = config['WHITELIST']
+I18N = config['I18N']
 
 # Set the log file name
 LOG_FILE = 'plexorcist.log'
@@ -83,13 +84,13 @@ def plexorcise():
                         make_request(url=url, headers={"X-Plex-Token": PLEX_TOKEN}, request_type="delete")
                     else:
                         with open(LOG_FILE, 'a') as log_file:
-                            log_file.write(f"{TIMESTAMP} - {title} is whitelisted!\n")
+                            log_file.write(f"{I18N['WHITELISTED'].format(TIMESTAMP, title)}\n")
 
                 space_reclaimed_in_gb = round(space_reclaimed_in_mb / 1024, 2)
 
                 # Write to log file
                 with open(LOG_FILE, 'a') as log_file:
-                    log_file.write(f"{TIMESTAMP} - {len(watched_videos)} watched videos were removed and {space_reclaimed_in_gb} GB reclaimed:\n")
+                    log_file.write(f"{I18N['WATCHED_VIDES_REMOVED'].format(TIMESTAMP, len(watched_videos), space_reclaimed_in_gb)}\n")
                     log_file.write('\n'.join(watched_titles))
                     log_file.write('\n')
 
@@ -97,18 +98,18 @@ def plexorcise():
                 webhook_url = urllib.parse.urlparse(IFTTT_WEBHOOK)
                 if "maker.ifttt.com" in IFTTT_WEBHOOK and webhook_url.scheme and webhook_url.netloc:
                     notification = {
-                        'value1': f"{len(watched_videos)} watched videos were removed and {space_reclaimed_in_gb} GB reclaimed:\n" + '\n'.join(watched_titles)
+                        'value1': f"{I18N['WATCHED_VIDES_REMOVED'].format(TIMESTAMP, len(watched_videos), space_reclaimed_in_gb)}\n" + '\n'.join(watched_titles)
                     }
                     make_request(url=IFTTT_WEBHOOK, json=notification, request_type="post")
 
                     with open(LOG_FILE, 'a') as log_file:
-                        log_file.write(f"{TIMESTAMP} - Notification sent!\n")
+                        log_file.write(f"{I18N['NOTIFICATION'].format(TIMESTAMP)}\n")
                 else:
                     with open(LOG_FILE, 'a') as log_file:
-                        log_file.write(f"{TIMESTAMP} - IFTTT Webhook URL not set!\n")
+                        log_file.write(f"{I18N['IFTTT_ERROR'].format(TIMESTAMP)}\n")
             else:
                 with open(LOG_FILE, 'a') as log_file:
-                    log_file.write(f"{TIMESTAMP} - No videos to delete!\n")
+                    log_file.write(f"{I18N['NO_VIDEOS'].format(TIMESTAMP)}\n")
 
             # Open the log file in read mode
             if cast:
@@ -137,13 +138,13 @@ def make_request(**kwargs):
         response.raise_for_status()  # Raise an exception for non-2xx responses
         return response.content
     except requests.exceptions.HTTPError as err:
-        exception = f"HTTP error occurred: {err}"
+        exception = f"{I18N['HTTPError'].format(err)}"
     except requests.exceptions.ConnectionError as err:
-        exception = f"Error connecting: {err}"
+        exception = f"{I18N['ConnectionError'].format(err)}"
     except requests.exceptions.Timeout as err:
-        exception = f"Timeout error occurred: {err}"
+        exception = f"{I18N['Timeout'].format(err)}"
     except requests.exceptions.RequestException as err:
-        exception = f"An error occurred: {err}"
+        exception = f"{I18N['RequestException'].format(err)}"
 
     if exception != "":
         if cast:
