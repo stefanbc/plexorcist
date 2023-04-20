@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 """Main Plexorcist execution file!"""
 
-import os
 import sys
 import json
 import urllib.parse
-from datetime import datetime
+import logging
+from logging.handlers import RotatingFileHandler
 import requests
 import xmltodict
 
@@ -28,23 +28,15 @@ I18N = config["I18N"]
 # Set the log file name
 LOG_FILE = "plexorcist.log"
 
-# Create file if it's missing
-if not os.path.isfile(LOG_FILE):
-    # Create an empty file
-    with open(LOG_FILE, "w", encoding="utf8") as log_file:
-        log_file.close()
-
-# Size check
-LOG_FILE_MAX_SIZE = 2000000  # 2 MB
-LOG_FILE_CURRENT_SIZE = os.path.getsize(LOG_FILE)
-
-# Check if the log file is larger than LOG_FILE_MAX_SIZE and empty it
-if LOG_FILE_CURRENT_SIZE > LOG_FILE_MAX_SIZE:
-    with open(LOG_FILE, "w", encoding="utf8") as log_file:
-        log_file.truncate(0)
-
-# Set the current timestamp
-TIMESTAMP = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+# Create a rotating file handler with a maximum size of 1 MB
+handler = RotatingFileHandler(LOG_FILE, maxBytes=1024 * 1024, backupCount=2)
+# Configure the logger with the rotating file handler
+logging.basicConfig(
+    level=logging.DEBUG,
+    handlers=[handler],
+    format="%(asctime)s %(levelname)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 
 def plexorcise():
@@ -133,18 +125,13 @@ def delete_videos(watched_videos, media_type):
                     request_type="delete",
                 )
             else:
-                with open(LOG_FILE, "a", encoding="utf8") as log_file:
-                    log_file.write(f"{I18N['WHITELISTED'].format(TIMESTAMP, title)}\n")
+                logging.info(I18N["WHITELISTED"].format(title))
 
         reclaimed_gb = round(reclaimed_mb / 1024, 2)
 
         # Write to log file
-        with open(LOG_FILE, "a", encoding="utf8") as log_file:
-            log_file.write(
-                f"{I18N['REMOVED'].format(TIMESTAMP, len(watched_videos), reclaimed_gb)}\n"
-            )
-            log_file.write("\n".join(watched_titles))
-            log_file.write("\n")
+        logging.info(I18N["REMOVED"].format(len(watched_videos), reclaimed_gb))
+        logging.info("\n".join(watched_titles))
 
         # Send notification via IFTTT
         send_notification(
@@ -154,8 +141,7 @@ def delete_videos(watched_videos, media_type):
         )
 
     else:
-        with open(LOG_FILE, "a", encoding="utf8") as log_file:
-            log_file.write(f"{I18N['NO_VIDEOS'].format(TIMESTAMP)}\n")
+        logging.info(I18N["NO_VIDEOS"])
 
 
 def send_notification(watched_videos, watched_titles, reclaimed_gb):
@@ -165,16 +151,14 @@ def send_notification(watched_videos, watched_titles, reclaimed_gb):
     webhook_url = urllib.parse.urlparse(IFTTT_WEBHOOK)
     if "maker.ifttt.com" in IFTTT_WEBHOOK and webhook_url.scheme and webhook_url.netloc:
         notification = {
-            "value1": f"{I18N['REMOVED'].format(TIMESTAMP, len(watched_videos), reclaimed_gb)}\n"
+            "value1": f"{I18N['REMOVED'].format(len(watched_videos), reclaimed_gb)}\n"
             + "\n".join(watched_titles)
         }
         make_request(url=IFTTT_WEBHOOK, json=notification, request_type="post")
 
-        with open(LOG_FILE, "a", encoding="utf8") as log_file:
-            log_file.write(f"{I18N['NOTIFICATION'].format(TIMESTAMP)}\n")
+        logging.info(I18N["NOTIFICATION"])
     else:
-        with open(LOG_FILE, "a", encoding="utf8") as log_file:
-            log_file.write(f"{I18N['IFTTT_ERROR'].format(TIMESTAMP)}\n")
+        logging.info(I18N["IFTTT_ERROR"])
 
 
 def make_request(**kwargs):
@@ -209,8 +193,7 @@ def make_request(**kwargs):
         if CAST:
             print(exception)
         else:
-            with open(LOG_FILE, "a", encoding="utf8") as log_file:
-                log_file.write(f"{TIMESTAMP} - {exception}\n")
+            logging.error(exception)
 
         return None
 
