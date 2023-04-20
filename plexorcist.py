@@ -42,16 +42,31 @@ if LOG_FILE_CURRENT_SIZE > LOG_FILE_MAX_SIZE:
 
 # Main plexorcise method
 def plexorcise():
+    data = {}
+    videos = []
+    media_type = ""
+
     # Set the current timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Fetch the Plex data
-    response = requests.get(f"{PLEX_HOSTNAME}/library/sections/{PLEX_LIBRARY}/allLeaves", headers={"X-Plex-Token": PLEX_TOKEN})
-    data = xmltodict.parse(response.content)
-    videos = data['MediaContainer']['Video']
-    media_type = data['MediaContainer']['@viewGroup']
+    try:
+        response = requests.get(f"{PLEX_HOSTNAME}/library/sections/{PLEX_LIBRARY}/allLeaves", headers={"X-Plex-Token": PLEX_TOKEN})
+        response.raise_for_status()  # Raise an exception for non-2xx responses
 
-    if videos:
+        data = xmltodict.parse(response.content)
+        videos = data['MediaContainer']['Video']
+        media_type = data['MediaContainer']['@viewGroup']
+    except requests.exceptions.HTTPError as err:
+        print(f"HTTP error occurred: {err}")
+    except requests.exceptions.ConnectionError as err:
+        print(f"Error connecting: {err}")
+    except requests.exceptions.Timeout as err:
+        print(f"Timeout error occurred: {err}")
+    except requests.exceptions.RequestException as err:
+        print(f"An error occurred: {err}")
+
+    if videos and len(videos) > 0:
         watched_videos = []
 
         # Filter watched videos
@@ -62,7 +77,7 @@ def plexorcise():
                 watched_videos.append(videos)
 
         # Delete watched videos and send notification
-        if watched_videos:
+        if watched_videos and len(watched_videos) > 0:
             watched_titles = []
             space_reclaimed_in_mb = 0
 
@@ -87,15 +102,15 @@ def plexorcise():
 
             # Write to log file
             with open(LOG_FILE, 'a') as log_file:
-                log_file.write(f"{timestamp} - {len(watched_videos)} watched episodes were removed and {space_reclaimed_in_gb} GB reclaimed:\n")
+                log_file.write(f"{timestamp} - {len(watched_videos)} watched videos were removed and {space_reclaimed_in_gb} GB reclaimed:\n")
                 log_file.write('\n'.join(watched_titles))
                 log_file.write('\n')
 
-            # Send notification if IFTTT url is set
+            # Send notification if IFTTT URL is set
             webhook_url = urllib.parse.urlparse(IFTTT_WEBHOOK)
             if "maker.ifttt.com" in IFTTT_WEBHOOK and webhook_url.scheme and webhook_url.netloc:
                 notification = {
-                    'value1': f"{len(watched_videos)} watched episodes were removed and {space_reclaimed_in_gb} GB reclaimed:\n" + '\n'.join(watched_titles)
+                    'value1': f"{len(watched_videos)} watched videos were removed and {space_reclaimed_in_gb} GB reclaimed:\n" + '\n'.join(watched_titles)
                 }
                 requests.post(IFTTT_WEBHOOK, json=notification)
 
