@@ -1,18 +1,15 @@
 {
-    "PLEX_HOSTNAME": "localhost",
-    "PLEX_PORT": 32400,
-    "PLEX_TOKEN": "<your_plex_token_here>",
-    "PLEX_LIBRARY": 0,
-    "IFTTT_WEBHOOK": "<your_ifttt_webhook_url_here>",
-    "WHITELIST": [
-        "SERIES 1",
-        "MOVIE 1"
-    ],
-    "I18N": {
-        "WHITELISTED": "{} is whitelisted!",
-        "REMOVED": "{} watched videos were removed and {} GB reclaimed:",
-        "NOTIFICATION": "Notification sent!",
-        "IFTTT_ERROR": "IFTTT Webhook URL not set!",
-        "NO_VIDEOS": "No videos to delete!"
-    }
+  "PLEX_HOSTNAME": "localhost",
+  "PLEX_PORT": 32400,
+  "PLEX_TOKEN": "<your_plex_token_here>",
+  "PLEX_LIBRARIES": [0, 1],
+  "IFTTT_WEBHOOK": "<your_ifttt_webhook_url_here>",
+  "WHITELIST": ["SERIES 1", "MOVIE 1"],
+  "I18N": {
+    "WHITELISTED": "{} is whitelisted!",
+    "REMOVED": "{} watched videos were removed and {} GB reclaimed:",
+    "NOTIFICATION": "Notification sent!",
+    "IFTTT_ERROR": "IFTTT Webhook URL not set!",
+    "NO_VIDEOS": "No videos to delete!"
+  }
 }

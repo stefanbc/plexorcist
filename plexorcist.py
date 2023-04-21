@@ -17,7 +17,7 @@ with open("plexorcist.config.json", "r", encoding="utf8") as config_file:
 # Set the script properties
 PLEX_HOSTNAME = f"http://{config['PLEX_HOSTNAME']}:{config['PLEX_PORT']}"
 PLEX_TOKEN = config["PLEX_TOKEN"]
-PLEX_LIBRARY = config["PLEX_LIBRARY"]
+PLEX_LIBRARIES = config["PLEX_LIBRARIES"]
 IFTTT_WEBHOOK = config["IFTTT_WEBHOOK"]
 WHITELIST = config["WHITELIST"]
 I18N = config["I18N"]
@@ -40,13 +40,14 @@ def plexorcise():
     """Main plexorcise method"""
 
     # Fetch the Plex data
-    response = make_request(
-        url=f"{PLEX_HOSTNAME}/library/sections/{PLEX_LIBRARY}/allLeaves",
-        headers={"X-Plex-Token": PLEX_TOKEN},
-    )
+    for library in PLEX_LIBRARIES:
+        response = make_request(
+            url=f"{PLEX_HOSTNAME}/library/sections/{library}/allLeaves",
+            headers={"X-Plex-Token": PLEX_TOKEN},
+        )
 
-    # Handle videos
-    handle_videos(response=response)
+        # Handle videos
+        handle_videos(response=response)
 
 
 def handle_videos(response):
