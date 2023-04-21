@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.2.0
+version=1.3.0
 
 # Get latest version
 wget -O Plexorcist.zip https://github.com/stefanbc/Plexorcist/archive/v${version}.zip
