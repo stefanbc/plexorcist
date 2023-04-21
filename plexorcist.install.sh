@@ -1,7 +1,12 @@
 #!/bin/bash
 
-# Clone Plexorcist
-git clone https://github.com/stefanbc/Plexorcist.git
+version=1.2.0
+
+# Get latest version
+wget https://github.com/stefanbc/Plexorcist/archive/v${version}.zip
+
+# Unzip the file
+unzip Plexorcist-v${version}.zip -d Plexorcist
 
 # Open Plexorcist
 cd Plexorcist
