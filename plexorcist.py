@@ -80,17 +80,14 @@ def handle_older_than():
 
     older_than_string = config.get("plex", "older_than").split()
     older_than_dict = {"days": 0, "hours": 0, "minutes": 0}
+    time_units = {"d": "days", "h": "hours", "m": "minutes"}
 
     if older_than_string[0] != "0":
         for time in older_than_string:
             unit = time[-1]
             value = int(time[:-1])
-            if unit == "d":
-                older_than_dict["days"] = value
-            elif unit == "h":
-                older_than_dict["hours"] = value
-            elif unit == "m":
-                older_than_dict["minutes"] = value
+            if unit in time_units:
+                older_than_dict[time_units[unit]] = value
 
         older_than_timedelta = timedelta(**older_than_dict)
         time_ago = datetime.now() - older_than_timedelta
