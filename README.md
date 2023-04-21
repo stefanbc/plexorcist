@@ -10,7 +10,7 @@ In other words it's a small Python script that clears a specific Plex Media Serv
 
 ## Features
 
-- Suppport for Movies or TV Shows
+- Suppport for multiple libraries (Movies and TV Shows only)
 - [JSON config file](https://github.com/stefanbc/Plexorcist/wiki/Configuration)
 - I18N (via config file) - [feeling fancy?](https://github.com/stefanbc/Plexorcist/wiki/I18N---King-James-Version)
 - Logging
@@ -20,7 +20,7 @@ In other words it's a small Python script that clears a specific Plex Media Serv
   - Logs the space reclaimed after deletion
   - Requests error handling
 - IFTTT integration (via webhook)
-- Movies or TV Shows whitelist
+- Movies and TV Shows whitelist
 
 ## Installation
 
