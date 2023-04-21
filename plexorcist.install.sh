@@ -2,23 +2,23 @@
 
 version=1.3.1
 
-# Get latest version
+echo "Step 1: Downloading Plexorcist v${version}..."
 wget https://github.com/stefanbc/Plexorcist/archive/refs/tags/v${version}.zip -O "Plexorcist-${version}.zip"
 
-# Unzip the file
+echo "Step 2: Unzipping Plexorcist-${version}.zip..."
 unzip ./"Plexorcist-${version}.zip"
 
-# Removes zip file
+echo "Step 3: Removing Plexorcist-${version}.zip..."
 rm ./"Plexorcist-${version}.zip"
 
-# Move the folder
+echo "Step 4: Renaming Plexorcist-${version} to Plexorcist..."
 mv ./"Plexorcist-${version}" ./Plexorcist
 
-# Open Plexorcist
+echo "Step 5: Installing dependencies using pip..."
 cd Plexorcist
-
-# Install the dependencies
 pip install -r requirements.txt
 
-# Give permissions to Plexorcist
+echo "Step 6: Making plexorcist.py executable..."
 chmod +x plexorcist.py
+
+echo "Step 7: Installation complete!"
