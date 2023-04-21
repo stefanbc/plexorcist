@@ -161,6 +161,7 @@ def handle_request_errors(func):
             return response
         except requests.exceptions.RequestException as err:
             logging.error(err)
+            return None
 
     return wrapper
 
