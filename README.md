@@ -29,7 +29,7 @@ In other words it's a small Python script that clears any number of Plex Media S
 Run this command in your terminal
 
 ```bash
-  wget -O - https://raw.githubusercontent.com/stefanbc/Plexorcist/main/plexorcist.install.sh | bash
+wget -O - https://raw.githubusercontent.com/stefanbc/Plexorcist/main/plexorcist.install.sh | bash
 ```
 
 ### Manually
@@ -37,25 +37,25 @@ Run this command in your terminal
 Clone Plexorcist
 
 ```bash
-  git clone https://github.com/stefanbc/Plexorcist.git
+git clone https://github.com/stefanbc/Plexorcist.git
 ```
 
 Open Plexorcist
 
 ```bash
-  cd Plexorcist
+cd Plexorcist
 ```
 
 Install the dependencies
 
 ```bash
-  pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 Give permissions to Plexorcist
 
 ```bash
-  chmod +x plexorcist.py
+chmod +x plexorcist.py
 ```
 
 Before running Plexorcist for the first time please read the [Documentation](#documentation).
