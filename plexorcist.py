@@ -19,7 +19,7 @@ config_file_path = os.path.join(script_dir, "plexorcist.ini")
 
 # Read the config file
 config = configparser.ConfigParser()
-config.read("plexorcist.ini")
+config.read(config_file_path)
 
 # Set the script properties
 PLEX_HOSTNAME = config.get("plex", "hostname")
@@ -38,8 +38,7 @@ for option in config.options("i18n"):
     I18N[option] = config.get("i18n", option)
 
 # Set the log file name
-log_file_path = os.path.join(script_dir, "plexorcist.log")
-LOG_FILE = log_file_path
+LOG_FILE = os.path.join(script_dir, "plexorcist.log")
 
 # Create a rotating file handler with a maximum size of 1 MB
 handler = RotatingFileHandler(LOG_FILE, maxBytes=1024 * 1024, backupCount=2)
