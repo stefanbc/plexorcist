@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Main Plexorcist execution file!"""
 
+import os
 import configparser
 import functools
 from datetime import datetime, timedelta
@@ -9,6 +10,12 @@ from logging.handlers import RotatingFileHandler
 import urllib.parse
 import requests
 import xmltodict
+
+# Get the absolute path of the directory containing the script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the absolute path of the INI file
+config_file_path = os.path.join(script_dir, "plexorcist.ini")
 
 # Read the config file
 config = configparser.ConfigParser()
@@ -31,7 +38,8 @@ for option in config.options("i18n"):
     I18N[option] = config.get("i18n", option)
 
 # Set the log file name
-LOG_FILE = "plexorcist.log"
+log_file_path = os.path.join(script_dir, "plexorcist.log")
+LOG_FILE = log_file_path
 
 # Create a rotating file handler with a maximum size of 1 MB
 handler = RotatingFileHandler(LOG_FILE, maxBytes=1024 * 1024, backupCount=2)
