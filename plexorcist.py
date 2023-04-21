@@ -3,6 +3,7 @@
 
 import configparser
 import functools
+from datetime import datetime, timedelta
 import logging
 from logging.handlers import RotatingFileHandler
 import urllib.parse
@@ -23,6 +24,8 @@ PLEX_LIBRARIES = [
 ]
 IFTTT_WEBHOOK = config.get("plex", "ifttt_webhook")
 WHITELIST = [video.strip() for video in config.get("plex", "whitelist").split(",")]
+
+# Set the translations
 I18N = {}
 for option in config.options("i18n"):
     I18N[option] = config.get("i18n", option)
@@ -62,29 +65,60 @@ def handle_videos(response):
         data = xmltodict.parse(response.content)
         videos = data["MediaContainer"]["Video"]
         media_type = data["MediaContainer"]["@viewGroup"]
+        older_than = handle_older_than()
 
         if videos and len(videos) > 0:
             # Filter watched videos
-            watched_videos = filter_videos(videos=videos)
+            watched_videos = filter_videos(videos=videos, older_than=older_than)
 
             # Delete watched videos and send notification
             delete_videos(watched_videos=watched_videos, media_type=media_type)
 
 
-def filter_videos(videos):
+def handle_older_than():
+    """Handle older than time diff"""
+
+    older_than_string = config.get("plex", "older_than").split()
+    older_than_dict = {"days": 0, "hours": 0, "minutes": 0}
+
+    if older_than_string[0] != "0":
+        for time in older_than_string:
+            unit = time[-1]
+            value = int(time[:-1])
+            if unit == "d":
+                older_than_dict["days"] = value
+            elif unit == "h":
+                older_than_dict["hours"] = value
+            elif unit == "m":
+                older_than_dict["minutes"] = value
+
+        older_than_timedelta = timedelta(**older_than_dict)
+        time_ago = datetime.now() - older_than_timedelta
+        unixtime = int(time_ago.timestamp())
+
+        return unixtime
+
+    return 0
+
+
+def filter_videos(videos, older_than):
     """Filter videos"""
 
-    watched_videos = []
+    # Check if video was watched and / or is older than
+    def is_watched_video(video):
+        return (
+            video.get("@viewCount")
+            and int(video["@viewCount"]) >= 1
+            and (
+                older_than == 0
+                or (
+                    video.get("@lastViewedAt")
+                    and int(video["@lastViewedAt"]) <= older_than
+                )
+            )
+        )
 
-    if isinstance(videos, list):
-        watched_videos = [
-            video
-            for video in videos
-            if video.get("@viewCount") and int(video["@viewCount"]) >= 1
-        ]
-    else:
-        if videos.get("@viewCount") and int(videos["@viewCount"]) >= 1:
-            watched_videos.append(videos)
+    watched_videos = [video for video in videos if is_watched_video(video)]
 
     return watched_videos
 
