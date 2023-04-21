@@ -5,6 +5,7 @@ import json
 import urllib.parse
 import logging
 from logging.handlers import RotatingFileHandler
+import functools
 import requests
 import xmltodict
 
@@ -137,7 +138,7 @@ def send_notification(watched_videos, watched_titles, reclaimed_gb):
 
     # Send notification if IFTTT URL is set
     webhook_url = urllib.parse.urlparse(IFTTT_WEBHOOK)
-    if "maker.ifttt.com" in IFTTT_WEBHOOK and webhook_url.scheme and webhook_url.netloc:
+    if webhook_url.scheme and webhook_url.netloc and "maker.ifttt.com" in IFTTT_WEBHOOK:
         notification = {
             "value1": f"{I18N['REMOVED'].format(len(watched_videos), reclaimed_gb)}\n"
             + "\n".join(watched_titles)
@@ -149,6 +150,22 @@ def send_notification(watched_videos, watched_titles, reclaimed_gb):
         logging.info(I18N["IFTTT_ERROR"])
 
 
+def handle_request_errors(func):
+    """Handle request errors"""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            response = func(*args, **kwargs)
+            response.raise_for_status()
+            return response
+        except requests.exceptions.RequestException as err:
+            logging.error(err)
+
+    return wrapper
+
+
+@handle_request_errors
 def make_request(**kwargs):
     """Handle requests"""
 
@@ -157,26 +174,15 @@ def make_request(**kwargs):
     request_json = kwargs.get("json")
     request_type = kwargs.get("request_type", "get")
 
-    response = None
+    request_function = {
+        "delete": requests.delete,
+        "post": requests.post,
+        "get": requests.get,
+    }.get(request_type, requests.get)
 
-    try:
-        if request_type == "delete":
-            response = requests.delete(request_url, headers=request_headers, timeout=10)
-        elif request_type == "post":
-            response = requests.post(request_url, json=request_json, timeout=10)
-        else:
-            response = requests.get(request_url, headers=request_headers, timeout=10)
-        response.raise_for_status()  # Raise an exception for non-2xx responses
-    except requests.exceptions.HTTPError as err:
-        logging.error(err)
-    except requests.exceptions.ConnectionError as err:
-        logging.error(err)
-    except requests.exceptions.Timeout as err:
-        logging.error(err)
-    except requests.exceptions.RequestException as err:
-        logging.error(err)
-
-    return response
+    return request_function(
+        request_url, headers=request_headers, json=request_json, timeout=10
+    )
 
 
 if __name__ == "__main__":
