@@ -11,8 +11,8 @@ In other words it's a small Python script that clears any number of Plex Media S
 ## Features
 
 - Suppport for multiple libraries (Movies and TV Shows only)
-- [JSON config file](https://github.com/stefanbc/Plexorcist/wiki/Configuration)
-- I18N (via config file) - [feeling fancy?](https://github.com/stefanbc/Plexorcist/wiki/I18N---King-James-Version)
+- [Config file](https://github.com/stefanbc/Plexorcist/wiki/Configuration)
+- I18N (via config file) - [feeling fancy?](https://github.com/stefanbc/Plexorcist/wiki/I18N-King-James-Version)
 - Logging
   - Automatic creation and cleanup when file gets too big (1 MB)
   - Logs the timestamp for all actions
