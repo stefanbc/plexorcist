@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.3.0
+version=1.3.1
 
 # Get latest version
 wget https://github.com/stefanbc/Plexorcist/archive/refs/tags/v${version}.zip -O "Plexorcist-${version}.zip"
