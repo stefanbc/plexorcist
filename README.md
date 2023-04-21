@@ -24,12 +24,12 @@ In other words it's a small Python script that clears any number of Plex Media S
 
 ## Installation
 
-### Single command
+### Recommended
 
 Run this command in your terminal
 
 ```bash
-  bash <(curl -s https://raw.githubusercontent.com/stefanbc/Plexorcist/main/plexorcist.install.sh)
+  wget -O - https://raw.githubusercontent.com/stefanbc/Plexorcist/main/plexorcist.install.sh | bash
 ```
 
 ### Manually
