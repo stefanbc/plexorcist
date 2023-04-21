@@ -86,46 +86,49 @@ def filter_videos(videos):
 def delete_videos(watched_videos, media_type):
     """Delete watched videos and send notification"""
 
-    if watched_videos and len(watched_videos) > 0:
-        watched_titles = []
-        reclaimed_mb = 0
+    # Get the video title
+    def get_title(video):
+        series = video.get("@grandparentTitle", "")
+        return (
+            f"{series} - {video['@title']}" if media_type == "show" else video["@title"]
+        )
 
-        # Delete watched videos if not included in WHITELIST
-        for video in watched_videos:
-            series = (
-                video["@grandparentTitle"] if video.get("@grandparentTitle") else ""
-            )
-            title = (
-                f"{series} - {video['@title']}"
-                if media_type == "show"
-                else video["@title"]
-            )
-            size_bytes = int(video["Media"]["Part"]["@size"])
-            size_mb = size_bytes / (1024 * 1024)
+    # Check if video is whitelisted
+    def is_whitelisted(video):
+        series = video.get("@grandparentTitle", "")
+        title = get_title(video)
+        return series in WHITELIST or title in WHITELIST
 
-            if series not in WHITELIST or title not in WHITELIST:
-                url = PLEX_HOSTNAME + video["@key"]
+    # Get the size of the video
+    def get_size(video):
+        size_bytes = int(video["Media"]["Part"]["@size"])
+        return round(size_bytes / (1024 * 1024), 2)
 
-                watched_titles.append(title)
-                reclaimed_mb += round(size_mb, 2)
-                make_request(
-                    url=url,
-                    headers={"X-Plex-Token": PLEX_TOKEN},
-                    request_type="delete",
-                )
-            else:
-                logging.info(I18N["WHITELISTED"].format(title))
+    # Delete the video
+    def delete_video(video):
+        url = PLEX_HOSTNAME + video["@key"]
+        size_mb = get_size(video)
+        make_request(
+            url=url, headers={"X-Plex-Token": PLEX_TOKEN}, request_type="delete"
+        )
+        return size_mb, get_title(video)
 
-        reclaimed_gb = round(reclaimed_mb / 1024, 2)
+    deleted_videos = [
+        delete_video(video) for video in watched_videos if not is_whitelisted(video)
+    ]
+
+    if deleted_videos:
+        deleted_titles, reclaimed_mb = zip(*deleted_videos)
+        reclaimed_gb = round(sum(reclaimed_mb) / 1024, 2)
+        deleted_count = len(deleted_titles)
 
         # Write to log file
-        logging.info(I18N["REMOVED"].format(len(watched_videos), reclaimed_gb))
-        logging.info("\n".join(watched_titles))
+        logging.info(I18N["REMOVED"].format(deleted_count, reclaimed_gb))
+        logging.info("\n".join(deleted_titles))
 
         # Send notification via IFTTT
         send_notification(
-            watched_videos=watched_videos,
-            watched_titles=watched_titles,
+            deleted_titles=list(deleted_titles),
             reclaimed_gb=reclaimed_gb,
         )
 
@@ -133,15 +136,17 @@ def delete_videos(watched_videos, media_type):
         logging.info(I18N["NO_VIDEOS"])
 
 
-def send_notification(watched_videos, watched_titles, reclaimed_gb):
+def send_notification(deleted_titles, reclaimed_gb):
     """Handles the IFTTT request"""
 
-    # Send notification if IFTTT URL is set
+    # Send notification if IFTTT URL is set correctly
     webhook_url = urllib.parse.urlparse(IFTTT_WEBHOOK)
-    if webhook_url.scheme and webhook_url.netloc and "maker.ifttt.com" in IFTTT_WEBHOOK:
+    if webhook_url.scheme and webhook_url.netloc:
+        deleted_count = len(deleted_titles)
+
         notification = {
-            "value1": f"{I18N['REMOVED'].format(len(watched_videos), reclaimed_gb)}\n"
-            + "\n".join(watched_titles)
+            "value1": f"{I18N['REMOVED'].format(deleted_count, reclaimed_gb)}\n"
+            + "\n".join(deleted_titles)
         }
         make_request(url=IFTTT_WEBHOOK, json=notification, request_type="post")
 
