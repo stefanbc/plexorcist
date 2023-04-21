@@ -3,10 +3,10 @@
 version=1.3.0
 
 # Get latest version
-wget -O Plexorcist.zip https://github.com/stefanbc/Plexorcist/archive/v${version}.zip
+wget https://github.com/stefanbc/Plexorcist/archive/v${version}.zip
 
 # Unzip the file
-unzip Plexorcist.zip -d Plexorcist
+unzip Plexorcist-v${version}.zip -d Plexorcist
 
 # Open Plexorcist
 cd Plexorcist
