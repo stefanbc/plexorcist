@@ -1,4 +1,4 @@
-[![Pylint](https://github.com/stefanbc/Plexorcist/actions/workflows/pylint.yml/badge.svg)](https://github.com/stefanbc/Plexorcist/actions/workflows/pylint.yml)
+[![Pylint](https://github.com/stefanbc/Plexorcist/actions/workflows/pylint.yml/badge.svg)](https://github.com/stefanbc/Plexorcist/actions/workflows/pylint.yml) [![Maintainability](https://api.codeclimate.com/v1/badges/f44eaf297abb78dc4f36/maintainability)](https://codeclimate.com/github/stefanbc/Plexorcist/maintainability)
 
 # Plexorcist
 
