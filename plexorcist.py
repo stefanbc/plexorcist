@@ -1,26 +1,31 @@
 #!/usr/bin/env python
 """Main Plexorcist execution file!"""
 
-import json
-import urllib.parse
+import configparser
+import functools
 import logging
 from logging.handlers import RotatingFileHandler
-import functools
+import urllib.parse
 import requests
 import xmltodict
 
-# Read the JSON config file
-with open("plexorcist.config.json", "r", encoding="utf8") as config_file:
-    # Load the JSON data into a Python dictionary
-    config = json.load(config_file)
+# Read the config file
+config = configparser.ConfigParser()
+config.read("plexorcist.ini")
 
 # Set the script properties
-PLEX_HOSTNAME = f"http://{config['PLEX_HOSTNAME']}:{config['PLEX_PORT']}"
-PLEX_TOKEN = config["PLEX_TOKEN"]
-PLEX_LIBRARIES = config["PLEX_LIBRARIES"]
-IFTTT_WEBHOOK = config["IFTTT_WEBHOOK"]
-WHITELIST = config["WHITELIST"]
-I18N = config["I18N"]
+PLEX_HOSTNAME = config.get("plex", "hostname")
+PLEX_PORT = config.get("plex", "port")
+PLEX_BASE = f"http://{PLEX_HOSTNAME}:{PLEX_PORT}"
+PLEX_TOKEN = config.get("plex", "token")
+PLEX_LIBRARIES = [
+    library.strip() for library in config.get("plex", "libraries").split(",")
+]
+IFTTT_WEBHOOK = config.get("plex", "ifttt_webhook")
+WHITELIST = [video.strip() for video in config.get("plex", "whitelist").split(",")]
+I18N = {}
+for option in config.options("i18n"):
+    I18N[option] = config.get("i18n", option)
 
 # Set the log file name
 LOG_FILE = "plexorcist.log"
@@ -42,7 +47,7 @@ def plexorcise():
     # Fetch the Plex data
     for library in PLEX_LIBRARIES:
         response = make_request(
-            url=f"{PLEX_HOSTNAME}/library/sections/{library}/allLeaves",
+            url=f"{PLEX_BASE}/library/sections/{library}/allLeaves",
             headers={"X-Plex-Token": PLEX_TOKEN},
         )
 
@@ -98,7 +103,12 @@ def delete_videos(watched_videos, media_type):
     def is_whitelisted(video):
         series = video.get("@grandparentTitle", "")
         title = get_title(video)
-        return series in WHITELIST or title in WHITELIST
+        check = series in WHITELIST or title in WHITELIST
+
+        if check:
+            logging.info(I18N["whitelisted"].format(title))
+
+        return check
 
     # Get the size of the video
     def get_size(video):
@@ -107,7 +117,7 @@ def delete_videos(watched_videos, media_type):
 
     # Delete the video
     def delete_video(video):
-        url = PLEX_HOSTNAME + video["@key"]
+        url = PLEX_BASE + video["@key"]
         size_mb = get_size(video)
         make_request(
             url=url, headers={"X-Plex-Token": PLEX_TOKEN}, request_type="delete"
@@ -124,7 +134,7 @@ def delete_videos(watched_videos, media_type):
         deleted_count = len(deleted_titles)
 
         # Write to log file
-        logging.info(I18N["REMOVED"].format(deleted_count, reclaimed_gb))
+        logging.info(I18N["removed"].format(deleted_count, reclaimed_gb))
         logging.info("\n".join(deleted_titles))
 
         # Send notification via IFTTT
@@ -134,7 +144,7 @@ def delete_videos(watched_videos, media_type):
         )
 
     else:
-        logging.info(I18N["NO_VIDEOS"])
+        logging.info(I18N["no_videos"])
 
 
 def send_notification(deleted_titles, reclaimed_gb):
@@ -146,14 +156,14 @@ def send_notification(deleted_titles, reclaimed_gb):
         deleted_count = len(deleted_titles)
 
         notification = {
-            "value1": f"{I18N['REMOVED'].format(deleted_count, reclaimed_gb)}\n"
+            "value1": f"{I18N['removed'].format(deleted_count, reclaimed_gb)}\n"
             + "\n".join(deleted_titles)
         }
         make_request(url=IFTTT_WEBHOOK, json=notification, request_type="post")
 
-        logging.info(I18N["NOTIFICATION"])
+        logging.info(I18N["notification"])
     else:
-        logging.info(I18N["IFTTT_ERROR"])
+        logging.info(I18N["ifttt_error"])
 
 
 def handle_request_errors(func):
