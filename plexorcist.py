@@ -127,30 +127,23 @@ def filter_videos(videos, older_than):
 def delete_videos(watched_videos, media_type):
     """Delete watched videos and send notification"""
 
-    # Get the video title
     def get_title(video):
-        series = video.get("@grandparentTitle", "")
-        return (
-            f"{series} - {video['@title']}" if media_type == "show" else video["@title"]
-        )
+        if media_type == "show":
+            series = video.get("@grandparentTitle", "")
+            return f"{series} - {video['@title']}"
 
-    # Check if video is whitelisted
+        return video["@title"]
+
     def is_whitelisted(video):
-        series = video.get("@grandparentTitle", "")
         title = get_title(video)
-        check = series in WHITELIST or title in WHITELIST
-
+        check = title in WHITELIST or video.get("@grandparentTitle", "") in WHITELIST
         if check:
             logging.info(I18N["whitelisted"].format(title))
-
         return check
 
-    # Get the size of the video
     def get_size(video):
-        size_bytes = int(video["Media"]["Part"]["@size"])
-        return round(size_bytes / (1024 * 1024), 2)
+        return round(int(video["Media"]["Part"]["@size"]) / (1024 * 1024), 2)
 
-    # Delete the video
     def delete_video(video):
         url = PLEX_BASE + video["@key"]
         size_mb = get_size(video)
@@ -168,14 +161,11 @@ def delete_videos(watched_videos, media_type):
         reclaimed_gb = round(sum(reclaimed_mb) / 1024, 2)
         deleted_count = len(deleted_titles)
 
-        # Write to log file
         logging.info(I18N["removed"].format(deleted_count, reclaimed_gb))
         logging.info("\n".join(deleted_titles))
 
-        # Send notification via IFTTT
         send_notification(
-            deleted_titles=list(deleted_titles),
-            reclaimed_gb=reclaimed_gb,
+            deleted_titles=list(deleted_titles), reclaimed_gb=reclaimed_gb
         )
 
     else:
