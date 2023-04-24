@@ -89,20 +89,17 @@ def handle_older_than():
     older_than_dict = {"days": 0, "hours": 0, "minutes": 0}
     time_units = {"d": "days", "h": "hours", "m": "minutes"}
 
-    if older_than_string[0] != "0":
-        for time in older_than_string:
-            unit = time[-1]
-            value = int(time[:-1])
-            if unit in time_units:
-                older_than_dict[time_units[unit]] = value
+    for time in older_than_string:
+        unit = time[-1]
+        value = int(time[:-1])
+        if unit in time_units:
+            older_than_dict[time_units[unit]] = value
 
-        older_than_timedelta = timedelta(**older_than_dict)
-        time_ago = datetime.now() - older_than_timedelta
-        unixtime = int(time_ago.timestamp())
+    older_than_timedelta = timedelta(**older_than_dict)
+    time_ago = datetime.now() - older_than_timedelta
+    unixtime = int(time_ago.timestamp())
 
-        return unixtime
-
-    return 0
+    return unixtime if older_than_string[0] != "0" else 0
 
 
 def filter_videos(videos, older_than):
