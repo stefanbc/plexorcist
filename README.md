@@ -4,7 +4,7 @@
 
 The Plexorcist banishes your binge-watching ghosts and unclutters your watched videos graveyard, bringing order and harmony to your Plex experience!
 
-In other words it's a small Python script that clears any number of Plex Media Server libraries of all watched videos.
+In other words it's a small Python script that cleans up any number of Plex Media Server libraries of all watched videos. Automatically delete watched episodes or movies, to clear up space on your Plex Media Server.
 
 **PSA: Run Plexorcist only on a Plex Media Server to which you have access and are certain you want to clean specific libraries. The creator of this script is not responsible for any unintended data loss.**
 
