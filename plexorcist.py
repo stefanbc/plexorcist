@@ -56,7 +56,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--update-config", action="store_true", help="update config file")
 
 # Parse command-line arguments
-args = parser.parse_args()
+input_args = parser.parse_args()
 
 
 def update_config_file():
@@ -281,7 +281,7 @@ def make_request(**kwargs):
 
 if __name__ == "__main__":
     # Check if the update-config argument was provided
-    if args.update_config:
+    if input_args.update_config:
         update_config_file()
     else:
         # Call the plexorcise function if the update-config argument is not provided
