@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """Main Plexorcist execution file!"""
 
+__version__ = "1.3.3"
+
 import os
 import argparse
 import configparser
@@ -54,6 +56,9 @@ logging.basicConfig(
 # Define command-line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--config", action="store_true", help="update config file")
+parser.add_argument(
+    "--version", action="store_true", help="prints the current installed version"
+)
 
 # Parse command-line arguments
 input_args = parser.parse_args()
@@ -270,6 +275,8 @@ if __name__ == "__main__":
     # Check if the config argument was provided
     if input_args.config:
         update_config_file()
+    elif input_args.version:
+        print(f"Verily, the current installed version is: {__version__}")
     else:
         # Call the plexorcise function if the config argument is not provided
         plexorcise()
