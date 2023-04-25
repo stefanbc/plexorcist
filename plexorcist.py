@@ -2,6 +2,7 @@
 """Main Plexorcist execution file!"""
 
 import os
+import argparse
 import configparser
 import functools
 from datetime import datetime, timedelta
@@ -49,6 +50,57 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
+
+# Define command-line arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("--update-config", action="store_true", help="update config file")
+
+# Parse command-line arguments
+args = parser.parse_args()
+
+
+def update_config_file():
+    """Update the config file via user prompt"""
+
+    print(
+        "Behold, if thou appendeth the flag 'update-config' unto thy command,\n"
+        + "thou shalt be granted the power to update thy configuration file with new values!\n\n"
+    )
+
+    # Prompt the user for input to update each option
+    hostname = input("Enter the new hostname (or press enter to skip): ")
+    port = input("Enter the new port (or press enter to skip): ")
+    token = input("Enter the new token (or press enter to skip): ")
+    libraries = input("Enter the new libraries (or press enter to skip): ")
+    ifttt_webhook = input("Enter the new IFTTT webhook (or press enter to skip): ")
+    whitelist = input("Enter the new whitelist (or press enter to skip): ")
+    older_than = input("Enter the new older_than value (or press enter to skip): ")
+
+    print(
+        "\n\nVerily, I thanketh thee for thine input, forsooth, and may thy configuration file\n"
+        + "be blessed with new values that shall bring forth great fruit in thine endeavours!"
+    )
+
+    # Update the options in the INI file with the user's input
+    if hostname:
+        config.set("plex", "hostname", hostname)
+    if port:
+        config.set("plex", "port", port)
+    if token:
+        config.set("plex", "token", token)
+    if libraries:
+        config.set("plex", "libraries", libraries)
+    if ifttt_webhook:
+        config.set("plex", "ifttt_webhook", ifttt_webhook)
+    if whitelist:
+        config.set("plex", "whitelist", whitelist)
+    if older_than:
+        config.set("plex", "older_than", older_than)
+
+    # Write the changes back to the INI file
+    with open(config_file_path, "w", encoding="utf-8") as configfile:
+        config.write(configfile)
+        logging.info("Config file has been updated with new values!")
 
 
 def plexorcise():
@@ -228,4 +280,9 @@ def make_request(**kwargs):
 
 
 if __name__ == "__main__":
-    plexorcise()
+    # Check if the update-config argument was provided
+    if args.update_config:
+        update_config_file()
+    else:
+        # Call the plexorcise function if the update-config argument is not provided
+        plexorcise()
