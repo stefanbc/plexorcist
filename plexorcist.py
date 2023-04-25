@@ -35,8 +35,8 @@ WHITELIST = [video.strip() for video in config.get("plex", "whitelist").split(",
 
 # Set the translations
 I18N = {}
-for option in config.options("i18n"):
-    I18N[option] = config.get("i18n", option)
+for translation in config.options("i18n"):
+    I18N[translation] = config.get("i18n", translation)
 
 # Set the log file name
 LOG_FILE = os.path.join(script_dir, "plexorcist.log")
@@ -67,35 +67,22 @@ def update_config_file():
         + "thou shalt be granted the power to update thy configuration file with new values!\n\n"
     )
 
-    # Prompt the user for input to update each option
-    hostname = input("Enter the new hostname (or press enter to skip): ")
-    port = input("Enter the new port (or press enter to skip): ")
-    token = input("Enter the new token (or press enter to skip): ")
-    libraries = input("Enter the new libraries (or press enter to skip): ")
-    ifttt_webhook = input("Enter the new IFTTT webhook (or press enter to skip): ")
-    whitelist = input("Enter the new whitelist (or press enter to skip): ")
-    older_than = input("Enter the new older_than value (or press enter to skip): ")
+    new_config_values = {}
+
+    # Prompt the user for new values for each option in the "plex" section
+    for item in config.options("plex"):
+        value_prompt = input(f"Enter the new {item} (or press enter to skip): ")
+        if value_prompt:
+            new_config_values[item] = value_prompt
+
+    # Update the values in the config object
+    for option, value in new_config_values.items():
+        config.set("plex", option, value)
 
     print(
         "\n\nVerily, I thanketh thee for thine input, forsooth, and may thy configuration file\n"
         + "be blessed with new values that shall bring forth great fruit in thine endeavours!"
     )
-
-    # Update the options in the INI file with the user's input
-    if hostname:
-        config.set("plex", "hostname", hostname)
-    if port:
-        config.set("plex", "port", port)
-    if token:
-        config.set("plex", "token", token)
-    if libraries:
-        config.set("plex", "libraries", libraries)
-    if ifttt_webhook:
-        config.set("plex", "ifttt_webhook", ifttt_webhook)
-    if whitelist:
-        config.set("plex", "whitelist", whitelist)
-    if older_than:
-        config.set("plex", "older_than", older_than)
 
     # Write the changes back to the INI file
     with open(config_file_path, "w", encoding="utf-8") as configfile:
