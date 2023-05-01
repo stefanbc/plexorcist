@@ -101,7 +101,9 @@ class Plexorcist:
             time_ago = datetime.now() - older_than_timedelta
             unixtime = int(time_ago.timestamp())
 
-        return unixtime if older_than_string[0] != "0" else 0
+            return unixtime
+
+        return 0
 
     def update_config_file(self):
         """Update the config file via user prompt"""
@@ -155,25 +157,39 @@ class Plexorcist:
         """Converts a list of library names or ids to a list of library ids"""
 
         library_ids = []
+        available_libraries = self.get_available_libraries()
 
         for library in libraries:
             if library.isdigit():
                 library_ids.append(int(library))
             else:
-                response = make_request(
-                    url=f"{self.plex_base}/library/sections",
-                    headers={"X-Plex-Token": self.config["plex_token"]},
-                )
-
-                if response is not None:
-                    data = xmltodict.parse(response.content)
-                    available_libraries = data["MediaContainer"]["Directory"]
-
-                    for section in available_libraries:
-                        if section["@title"].lower() == library.lower():
-                            library_ids.append(int(section["@key"]))
+                library_id = self.get_library_id_by_name(library, available_libraries)
+                if library_id:
+                    library_ids.append(library_id)
 
         return library_ids
+
+    def get_available_libraries(self):
+        """Returns a list of available Plex libraries"""
+
+        response = make_request(
+            url=f"{self.plex_base}/library/sections",
+            headers={"X-Plex-Token": self.config["plex_token"]},
+        )
+
+        if response is not None:
+            data = xmltodict.parse(response.content)
+            return data["MediaContainer"]["Directory"]
+        else:
+            return []
+
+    def get_library_id_by_name(self, library_name, available_libraries):
+        """Returns the library ID for the given library name"""
+
+        for section in available_libraries:
+            if section["@title"].lower() == library_name.lower():
+                return int(section["@key"])
+        return None
 
     def handle_videos(self, response):
         """Handle videos"""
