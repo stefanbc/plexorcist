@@ -180,8 +180,7 @@ class Plexorcist:
         if response is not None:
             data = xmltodict.parse(response.content)
             return data["MediaContainer"]["Directory"]
-        else:
-            return []
+        return []
 
     def get_library_id_by_name(self, library_name, available_libraries):
         """Returns the library ID for the given library name"""
