@@ -90,20 +90,20 @@ class Plexorcist:
         older_than_dict = {"days": 0, "hours": 0, "minutes": 0}
         time_units = {"d": "days", "h": "hours", "m": "minutes"}
 
-        if older_than_string[0] != "0":
-            for time in older_than_string:
-                unit = time[-1]
-                value = int(time[:-1])
-                if unit in time_units:
-                    older_than_dict[time_units[unit]] = value
+        if older_than_string[0] == "0":
+            return 0
 
-            older_than_timedelta = timedelta(**older_than_dict)
-            time_ago = datetime.now() - older_than_timedelta
-            unixtime = int(time_ago.timestamp())
+        for time in older_than_string:
+            unit = time[-1]
+            value = int(time[:-1])
+            if unit in time_units:
+                older_than_dict[time_units[unit]] = value
 
-            return unixtime
+        older_than_timedelta = timedelta(**older_than_dict)
+        time_ago = datetime.now() - older_than_timedelta
+        unixtime = int(time_ago.timestamp())
 
-        return 0
+        return unixtime
 
     def update_config_file(self):
         """Update the config file via user prompt"""
@@ -156,18 +156,15 @@ class Plexorcist:
     def convert_to_library_ids(self, libraries):
         """Converts a list of library names or ids to a list of library ids"""
 
-        library_ids = []
         available_libraries = self.get_available_libraries()
 
-        for library in libraries:
-            if library.isdigit():
-                library_ids.append(int(library))
-            else:
-                library_id = self.get_library_id_by_name(library, available_libraries)
-                if library_id:
-                    library_ids.append(library_id)
-
-        return library_ids
+        return [
+            int(library)
+            if library.isdigit()
+            else self.get_library_id_by_name(library, available_libraries)
+            for library in libraries
+            if library
+        ]
 
     def get_available_libraries(self):
         """Returns a list of available Plex libraries"""
@@ -180,6 +177,7 @@ class Plexorcist:
         if response is not None:
             data = xmltodict.parse(response.content)
             return data["MediaContainer"]["Directory"]
+
         return []
 
     def get_library_id_by_name(self, library_name, available_libraries):
