@@ -22,7 +22,6 @@ class Plexorcist:
         """Init method for Plexorcist"""
 
         self._set_config()
-        self._set_properties()
         self._set_logging()
 
     def _set_config(self):
@@ -40,8 +39,7 @@ class Plexorcist:
 
         # Extract configuration values into a separate dictionary
         self.config = {
-            "plex_hostname": self.config_file.get("plex", "hostname"),
-            "plex_port": self.config_file.get("plex", "port"),
+            "plex_base": f'http://{self.config_file.get("plex", "hostname")}:{self.config_file.get("plex", "port")}',
             "plex_token": self.config_file.get("plex", "token"),
             "plex_libraries": [
                 library.strip()
@@ -59,13 +57,6 @@ class Plexorcist:
             },
             "log_file": os.path.join(script_dir, "plexorcist.log"),
         }
-
-    def _set_properties(self):
-        """Set the script properties"""
-
-        self.plex_base = (
-            f"http://{self.config['plex_hostname']}:{self.config['plex_port']}"
-        )
 
     def _set_logging(self):
         """Set the logger"""
@@ -146,12 +137,13 @@ class Plexorcist:
         # Fetch the Plex data
         for library in library_ids:
             response = make_request(
-                url=f"{self.plex_base}/library/sections/{library}/allLeaves",
+                url=f'{self.config["plex_base"]}/library/sections/{library}/allLeaves',
                 headers={"X-Plex-Token": self.config["plex_token"]},
             )
 
             # Handle videos
-            self.handle_videos(response=response)
+            if response is not None:
+                self.handle_videos(response=response)
 
     def convert_to_library_ids(self, libraries):
         """Converts a list of library names or ids to a list of library ids"""
@@ -170,7 +162,7 @@ class Plexorcist:
         """Returns a list of available Plex libraries"""
 
         response = make_request(
-            url=f"{self.plex_base}/library/sections",
+            url=f'{self.config["plex_base"]}/library/sections',
             headers={"X-Plex-Token": self.config["plex_token"]},
         )
 
@@ -191,17 +183,16 @@ class Plexorcist:
     def handle_videos(self, response):
         """Handle videos"""
 
-        if response is not None:
-            data = xmltodict.parse(response.content)
-            videos = data["MediaContainer"]["Video"]
-            media_type = data["MediaContainer"]["@viewGroup"]
+        data = xmltodict.parse(response.content)
+        videos = data["MediaContainer"]["Video"]
+        media_type = data["MediaContainer"]["@viewGroup"]
 
-            if videos and len(videos) > 0:
-                # Filter watched videos
-                watched_videos = self.filter_videos(videos=videos)
+        if videos and len(videos) > 0:
+            # Filter watched videos
+            watched_videos = self.filter_videos(videos=videos)
 
-                # Delete watched videos and send notification
-                self.delete_videos(watched_videos=watched_videos, media_type=media_type)
+            # Delete watched videos and send notification
+            self.delete_videos(watched_videos=watched_videos, media_type=media_type)
 
     def filter_videos(self, videos):
         """Filter videos"""
@@ -252,14 +243,12 @@ class Plexorcist:
 
         # Delete the video
         def delete_video(video):
-            url = self.plex_base + video["@key"]
-            size_mb = get_size(video)
             make_request(
-                url=url,
+                url=self.config["plex_base"] + video["@key"],
                 headers={"X-Plex-Token": self.config["plex_token"]},
                 request_type="delete",
             )
-            return size_mb, get_title(video)
+            return get_size(video), get_title(video)
 
         deleted_videos = [
             delete_video(video) for video in watched_videos if not is_whitelisted(video)
