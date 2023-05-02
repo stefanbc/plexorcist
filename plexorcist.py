@@ -28,18 +28,21 @@ class Plexorcist:
         """Read the config file and set the config dictionary"""
 
         # Get the absolute path of the directory containing the script
-        script_dir = os.path.dirname(os.path.abspath(__file__))
+        self.script_dir = os.path.dirname(os.path.abspath(__file__))
 
         # Construct the absolute path of the INI file
-        self.config_file_path = os.path.join(script_dir, "plexorcist.ini")
+        self.config_file_path = os.path.join(self.script_dir, "plexorcist.ini")
 
         # Read the config file
         self.config_file = configparser.ConfigParser()
         self.config_file.read(self.config_file_path)
 
         # Extract configuration values into a separate dictionary
+        hostname = self.config_file.get("plex", "hostname")
+        port = self.config_file.get("plex", "port")
+
         self.config = {
-            "plex_base": f'http://{self.config_file.get("plex", "hostname")}:{self.config_file.get("plex", "port")}',
+            "plex_base": f"http://{hostname}:{port}",
             "plex_token": self.config_file.get("plex", "token"),
             "plex_libraries": [
                 library.strip()
@@ -55,7 +58,6 @@ class Plexorcist:
                 translation: self.config_file.get("i18n", translation)
                 for translation in self.config_file.options("i18n")
             },
-            "log_file": os.path.join(script_dir, "plexorcist.log"),
         }
 
     def _set_logging(self):
@@ -63,7 +65,9 @@ class Plexorcist:
 
         # Create a rotating file handler with a maximum size of 1 MB
         handler = RotatingFileHandler(
-            self.config["log_file"], maxBytes=1024 * 1024, backupCount=2
+            os.path.join(self.script_dir, "plexorcist.log"),
+            maxBytes=1024 * 1024,
+            backupCount=2,
         )
 
         # Configure the logger with the rotating file handler
@@ -90,8 +94,7 @@ class Plexorcist:
             if unit in time_units:
                 older_than_dict[time_units[unit]] = value
 
-        older_than_timedelta = timedelta(**older_than_dict)
-        time_ago = datetime.now() - older_than_timedelta
+        time_ago = datetime.now() - timedelta(**older_than_dict)
         unixtime = int(time_ago.timestamp())
 
         return unixtime
@@ -100,16 +103,16 @@ class Plexorcist:
         """Update the config file via user prompt"""
 
         print(
-            "Behold, if thou appendeth the flag 'config' unto thy command,\n"
+            "\n\nBehold, if thou appendeth the flag 'config' unto thy command,\n"
             + "thou shalt be granted the power to update thy"
-            + "configuration file with new values!\n\n"
+            + "configuration file with new values!\n"
         )
 
         new_config_values = {}
 
         # Prompt the user for new values for each option in the "plex" section
         for item in self.config_file.options("plex"):
-            value_prompt = input(f"Enter the new {item} (or press enter to skip): ")
+            value_prompt = input(f"\nEnter the new {item} (or press enter to skip): ")
             if value_prompt:
                 new_config_values[item] = value_prompt
 
@@ -126,7 +129,7 @@ class Plexorcist:
             "\n\nVerily, I thanketh thee for thine input, forsooth,"
             + "and may thy configuration file\n"
             + "be blessed with new values that shall "
-            + "bring forth great fruit in thine endeavours!"
+            + "bring forth great fruit in thine endeavours!\n\n"
         )
 
     def banish(self):
