@@ -30,8 +30,3 @@ jobs:
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-
-    - name: Upload coverage to Code Climate
-      uses: codecov/codeclimate-action@v1
-      with:
-        token: ${{ secrets.CODECLIMATE_TOKEN }}
