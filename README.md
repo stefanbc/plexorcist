@@ -13,8 +13,8 @@ In other words it's a small Python script that cleans up any number of Plex Medi
 - Suppport for multiple libraries (Movies and TV Shows only)
 - Movies and TV Shows whitelist
 - Remove only videos older than
-- Configurable via [config file](https://github.com/stefanbc/Plexorcist/wiki/Configuration)
-- I18N (via config file) - [feeling fancy?](https://github.com/stefanbc/Plexorcist/wiki/I18N-King-James-Version)
+- Configurable via [config file](https://github.com/stefanbc/plexorcist/wiki/Configuration)
+- I18N (via config file) - [feeling fancy?](https://github.com/stefanbc/plexorcist/wiki/I18N-King-James-Version)
 - Logging
   - Automatic creation and cleanup when file gets too big (1 MB)
   - Logs the timestamp for all actions
@@ -30,7 +30,7 @@ In other words it's a small Python script that cleans up any number of Plex Medi
 Run this command in your terminal
 
 ```bash
-wget -O - https://raw.githubusercontent.com/stefanbc/Plexorcist/main/plexorcist.install.sh | bash
+wget -O - https://raw.githubusercontent.com/stefanbc/plexorcist/main/plexorcist.install.sh | bash
 ```
 
 ### Manually
@@ -38,7 +38,7 @@ wget -O - https://raw.githubusercontent.com/stefanbc/Plexorcist/main/plexorcist.
 Clone Plexorcist
 
 ```bash
-git clone https://github.com/stefanbc/Plexorcist.git
+git clone https://github.com/stefanbc/plexorcist.git
 ```
 
 Open Plexorcist
@@ -63,15 +63,15 @@ Before running Plexorcist for the first time please read the [Documentation](#do
 
 ## Documentation
 
-[Documentation](https://github.com/stefanbc/Plexorcist/wiki)
+[Documentation](https://github.com/stefanbc/plexorcist/wiki)
 
 ## Contributing
 
 Contributions are always welcome!
 
-See [CONTRIBUTING.md](https://github.com/stefanbc/Plexorcist/blob/main/CONTRIBUTING.md) for ways to get started.
+See [CONTRIBUTING.md](https://github.com/stefanbc/plexorcist/blob/main/CONTRIBUTING.md) for ways to get started.
 
-Please adhere to this project's [code of conduct](https://github.com/stefanbc/Plexorcist/blob/main/CODE_OF_CONDUCT.md).
+Please adhere to this project's [code of conduct](https://github.com/stefanbc/plexorcist/blob/main/CODE_OF_CONDUCT.md).
 
 ## Authors
 
@@ -79,4 +79,4 @@ Please adhere to this project's [code of conduct](https://github.com/stefanbc/Pl
 
 ## License
 
-[MIT](https://github.com/stefanbc/Plexorcist/blob/main/LICENSE)
+[MIT](https://github.com/stefanbc/plexorcist/blob/main/LICENSE)
