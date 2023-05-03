@@ -3,19 +3,19 @@
 version=1.3.4
 
 echo "Step 1: Downloading Plexorcist v${version}..."
-wget https://github.com/stefanbc/Plexorcist/archive/refs/tags/v${version}.zip -O "Plexorcist-${version}.zip"
+wget https://github.com/stefanbc/plexorcist/archive/refs/tags/v${version}.zip -O "plexorcist-${version}.zip"
 
-echo "Step 2: Unzipping Plexorcist-${version}.zip..."
+echo "Step 2: Unzipping plexorcist-${version}.zip..."
 unzip ./"Plexorcist-${version}.zip"
 
-echo "Step 3: Removing Plexorcist-${version}.zip..."
-rm ./"Plexorcist-${version}.zip"
+echo "Step 3: Removing plexorcist-${version}.zip..."
+rm ./"plexorcist-${version}.zip"
 
-echo "Step 4: Renaming Plexorcist-${version} to Plexorcist..."
-mv ./"Plexorcist-${version}" ./Plexorcist
+echo "Step 4: Renaming plexorcist-${version} to plexorcist..."
+mv ./"plexorcist-${version}" ./plexorcist
 
 echo "Step 5: Installing dependencies using pip..."
-cd Plexorcist
+cd plexorcist
 pip install -r requirements.txt
 
 echo "Step 6: Making plexorcist.py executable..."
