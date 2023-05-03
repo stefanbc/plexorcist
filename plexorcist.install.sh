@@ -6,7 +6,7 @@ echo "Step 1: Downloading Plexorcist v${version}..."
 wget https://github.com/stefanbc/plexorcist/archive/refs/tags/v${version}.zip -O "plexorcist-${version}.zip"
 
 echo "Step 2: Unzipping plexorcist-${version}.zip..."
-unzip ./"Plexorcist-${version}.zip"
+unzip ./"plexorcist-${version}.zip"
 
 echo "Step 3: Removing plexorcist-${version}.zip..."
 rm ./"plexorcist-${version}.zip"
