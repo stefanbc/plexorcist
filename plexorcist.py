@@ -124,20 +124,23 @@ class Plexorcist:
                 break
 
         # Update the values in the config object
-        for option, value in new_config_values.items():
-            self.config_file.set("plex", option, value)
+        if new_config_values:
+            for option, value in new_config_values.items():
+                self.config_file.set("plex", option, value)
 
-        # Write the changes back to the INI file
-        with open(self.config_file_path, "w", encoding="utf-8") as configfile:
-            self.config_file.write(configfile)
-            logging.info("Config file has been updated with new values!")
+            # Write the changes back to the INI file
+            with open(self.config_file_path, "w", encoding="utf-8") as configfile:
+                self.config_file.write(configfile)
+                logging.info("Config file has been updated with new values!")
 
-        print(
-            "\n\nI thanketh thee for thine input, forsooth, "
-            + "and may thy configuration file\n"
-            + "be blessed with new values that shall "
-            + "bring forth great fruit in thine endeavours!\n\n"
-        )
+            print(
+                "\n\nI thanketh thee for thine input, forsooth, "
+                + "and may thy configuration file\n"
+                + "be blessed with new values that shall "
+                + "bring forth great fruit in thine endeavours!\n\n"
+            )
+        else:
+            logging.info("No changes made to the config file.")
 
     def banish(self):
         """The banishing method"""
@@ -145,21 +148,22 @@ class Plexorcist:
         pattern = r"^[A-Za-z0-9_]+"
         match = re.match(pattern, self.config["plex_token"])
 
-        if match:
-            library_ids = self.convert_to_library_ids(self.config["plex_libraries"])
-
-            # Fetch the Plex data
-            for library in library_ids:
-                response = make_request(
-                    url=f'{self.config["plex_base"]}/library/sections/{library}/allLeaves',
-                    headers={"X-Plex-Token": self.config["plex_token"]},
-                )
-
-                # Handle videos
-                if response is not None:
-                    self.handle_videos(response=response)
-        else:
+        if not match:
             self.update_config_file()
+            return
+
+        library_ids = self.convert_to_library_ids(self.config["plex_libraries"])
+
+        # Fetch the Plex data
+        for library in library_ids:
+            response = make_request(
+                url=f'{self.config["plex_base"]}/library/sections/{library}/allLeaves',
+                headers={"X-Plex-Token": self.config["plex_token"]},
+            )
+
+            # Handle videos
+            if response is not None:
+                self.handle_videos(response=response)
 
     def convert_to_library_ids(self, libraries):
         """Converts a list of library names or ids to a list of library ids"""
