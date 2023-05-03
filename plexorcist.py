@@ -7,6 +7,7 @@ import os
 import argparse
 import configparser
 import functools
+import re
 from datetime import datetime, timedelta
 import logging
 from logging.handlers import RotatingFileHandler
@@ -112,9 +113,15 @@ class Plexorcist:
 
         # Prompt the user for new values for each option in the "plex" section
         for item in self.config_file.options("plex"):
-            value_prompt = input(f"\nEnter the new {item} (or press enter to skip): ")
-            if value_prompt:
-                new_config_values[item] = value_prompt
+            try:
+                value_prompt = input(
+                    f"\nEnter the new {item} (or press enter to skip): "
+                )
+                if value_prompt:
+                    new_config_values[item] = value_prompt
+            except KeyboardInterrupt:
+                print("\n\nThou hast interrupted the configuration of Plexorcist!")
+                break
 
         # Update the values in the config object
         for option, value in new_config_values.items():
@@ -126,7 +133,7 @@ class Plexorcist:
             logging.info("Config file has been updated with new values!")
 
         print(
-            "\n\nVerily, I thanketh thee for thine input, forsooth,"
+            "\n\nI thanketh thee for thine input, forsooth, "
             + "and may thy configuration file\n"
             + "be blessed with new values that shall "
             + "bring forth great fruit in thine endeavours!\n\n"
@@ -135,18 +142,24 @@ class Plexorcist:
     def banish(self):
         """The banishing method"""
 
-        library_ids = self.convert_to_library_ids(self.config["plex_libraries"])
+        pattern = r"^[A-Za-z0-9_]+"
+        match = re.match(pattern, self.config["plex_token"])
 
-        # Fetch the Plex data
-        for library in library_ids:
-            response = make_request(
-                url=f'{self.config["plex_base"]}/library/sections/{library}/allLeaves',
-                headers={"X-Plex-Token": self.config["plex_token"]},
-            )
+        if match:
+            library_ids = self.convert_to_library_ids(self.config["plex_libraries"])
 
-            # Handle videos
-            if response is not None:
-                self.handle_videos(response=response)
+            # Fetch the Plex data
+            for library in library_ids:
+                response = make_request(
+                    url=f'{self.config["plex_base"]}/library/sections/{library}/allLeaves',
+                    headers={"X-Plex-Token": self.config["plex_token"]},
+                )
+
+                # Handle videos
+                if response is not None:
+                    self.handle_videos(response=response)
+        else:
+            self.update_config_file()
 
     def convert_to_library_ids(self, libraries):
         """Converts a list of library names or ids to a list of library ids"""
