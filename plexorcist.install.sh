@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=1.3.3
+version=1.3.4
 
 echo "Step 1: Downloading Plexorcist v${version}..."
 wget https://github.com/stefanbc/Plexorcist/archive/refs/tags/v${version}.zip -O "Plexorcist-${version}.zip"
