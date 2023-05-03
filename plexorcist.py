@@ -105,7 +105,7 @@ class Plexorcist:
 
         print(
             "\n\nBehold, if thou appendeth the flag 'config' unto thy command,\n"
-            + "thou shalt be granted the power to update thy"
+            + "thou shalt be granted the power to update thy "
             + "configuration file with new values!\n"
         )
 
@@ -132,15 +132,15 @@ class Plexorcist:
             with open(self.config_file_path, "w", encoding="utf-8") as configfile:
                 self.config_file.write(configfile)
                 logging.info("Config file has been updated with new values!")
-
-            print(
-                "\n\nI thanketh thee for thine input, forsooth, "
-                + "and may thy configuration file\n"
-                + "be blessed with new values that shall "
-                + "bring forth great fruit in thine endeavours!\n\n"
-            )
         else:
             logging.info("No changes made to the config file.")
+
+        print(
+            "\n\nI thanketh thee for thine input, forsooth, "
+            + "and may thy configuration file\n"
+            + "be blessed with new values that shall "
+            + "bring forth great fruit in thine endeavours!\n\n"
+        )
 
     def banish(self):
         """The banishing method"""
@@ -287,7 +287,6 @@ class Plexorcist:
             self.send_notification(
                 deleted_titles=list(deleted_titles), reclaimed_gb=reclaimed_gb
             )
-
         else:
             logging.info(self.config["i18n"]["no_videos"])
 
