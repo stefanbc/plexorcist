@@ -5,11 +5,7 @@ from plexorcist import Plexorcist
 
 
 class TestPlexorcist(unittest.TestCase):
-    """The main Plexorcist testing class
-
-    Args:
-        unittest (_type_): _description_
-    """
+    """The main Plexorcist testing class"""
 
     def setUp(self):
         """Initialize Plexorcist"""
