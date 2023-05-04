@@ -1,4 +1,10 @@
+# Random
 .vscode
 __pycache__/
+
+# Tests
+.coverage
+
+# Plexorcist files
 plexorcist.log
 plexorcist_report.csv
