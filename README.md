@@ -46,7 +46,7 @@ git clone https://github.com/stefanbc/plexorcist.git
 Open Plexorcist
 
 ```bash
-cd Plexorcist
+cd plexorcist
 ```
 
 Install the dependencies
