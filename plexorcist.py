@@ -6,14 +6,13 @@ __version__ = "1.3.4"
 import os
 import argparse
 import configparser
-import functools
 import re
 from datetime import datetime, timedelta
 import logging
 from logging.handlers import RotatingFileHandler
 import urllib.parse
-import requests
 import xmltodict
+from utils import utils
 
 
 class Plexorcist:
@@ -22,11 +21,13 @@ class Plexorcist:
     def __init__(self):
         """Init method for Plexorcist"""
 
+        self.util = utils.Utils()
+        self._set_files()
         self._set_config()
         self._set_logging()
 
-    def _set_config(self):
-        """Read the config file and set the config dictionary"""
+    def _set_files(self):
+        """Set all needed file paths and read config file"""
 
         # Get the absolute path of the directory containing the script
         self.script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -34,9 +35,15 @@ class Plexorcist:
         # Construct the absolute path of the INI file
         self.config_file_path = os.path.join(self.script_dir, "plexorcist.ini")
 
+        # Construct the absolute path of the reports file
+        self.reports_file_path = os.path.join(self.script_dir, "plexorcist_report.csv")
+
         # Read the config file
         self.config_file = configparser.ConfigParser()
         self.config_file.read(self.config_file_path)
+
+    def _set_config(self):
+        """Set the config dictionary"""
 
         # Extract configuration values into a separate dictionary
         hostname = self.config_file.get("plex", "hostname")
@@ -145,6 +152,7 @@ class Plexorcist:
     def banish(self):
         """The banishing method"""
 
+        # Check if the Plex Token has been set before making requests
         pattern = r"^[A-Za-z0-9_]+"
         match = re.match(pattern, self.config["plex_token"])
 
@@ -152,11 +160,12 @@ class Plexorcist:
             self.update_config_file()
             return
 
+        # Convert the libraries to ids
         library_ids = self.convert_to_library_ids(self.config["plex_libraries"])
 
         # Fetch the Plex data
         for library in library_ids:
-            response = make_request(
+            response = self.util.make_request(
                 url=f'{self.config["plex_base"]}/library/sections/{library}/allLeaves',
                 headers={"X-Plex-Token": self.config["plex_token"]},
             )
@@ -181,7 +190,7 @@ class Plexorcist:
     def get_available_libraries(self):
         """Returns a list of available Plex libraries"""
 
-        response = make_request(
+        response = self.util.make_request(
             url=f'{self.config["plex_base"]}/library/sections',
             headers={"X-Plex-Token": self.config["plex_token"]},
         )
@@ -263,7 +272,7 @@ class Plexorcist:
 
         # Delete the video
         def delete_video(video):
-            make_request(
+            self.util.make_request(
                 url=self.config["plex_base"] + video["@key"],
                 headers={"X-Plex-Token": self.config["plex_token"]},
                 request_type="delete",
@@ -284,11 +293,23 @@ class Plexorcist:
             )
             logging.info("\n".join(deleted_titles))
 
+            self.util.write_to_csv(
+                num_deleted=deleted_count,
+                gb_reclaimed=reclaimed_gb,
+                csv_path=self.reports_file_path,
+            )
+
             self.send_notification(
                 deleted_titles=list(deleted_titles), reclaimed_gb=reclaimed_gb
             )
         else:
             logging.info(self.config["i18n"]["no_videos"])
+
+            self.util.write_to_csv(
+                num_deleted=0,
+                gb_reclaimed=0,
+                csv_path=self.reports_file_path,
+            )
 
     def send_notification(self, deleted_titles, reclaimed_gb):
         """Handles the IFTTT request"""
@@ -302,49 +323,13 @@ class Plexorcist:
                 "value1": f"{self.config['i18n']['removed'].format(deleted_count, reclaimed_gb)}\n"
                 + "\n".join(deleted_titles)
             }
-            make_request(
+            self.util.make_request(
                 url=self.config["ifttt_webhook"], json=notification, request_type="post"
             )
 
             logging.info(self.config["i18n"]["notification"])
         else:
             logging.info(self.config["i18n"]["ifttt_error"])
-
-
-def handle_request_errors(func):
-    """Handle request errors"""
-
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            response = func(*args, **kwargs)
-            response.raise_for_status()
-            return response
-        except requests.exceptions.RequestException as err:
-            logging.error(err)
-            return None
-
-    return wrapper
-
-
-@handle_request_errors
-def make_request(**kwargs):
-    """Handle requests"""
-
-    request_url = kwargs.get("url")
-    request_headers = kwargs.get("headers")
-    request_json = kwargs.get("json")
-    request_type = kwargs.get("request_type", "get")
-
-    request_function = {
-        "delete": requests.delete,
-        "post": requests.post,
-        "get": requests.get,
-    }.get(request_type, requests.get)
-
-    return request_function(
-        request_url, headers=request_headers, json=request_json, timeout=10
-    )
 
 
 if __name__ == "__main__":
