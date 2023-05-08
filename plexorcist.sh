@@ -35,7 +35,7 @@ echo "${GREEN}Step 5:${RESET} Installing dependencies using pip ..."
 cd plexorcist
 pip install -qq -r requirements.txt
 
-echo "${GREEN}Step 6:${RESET} Making plexorcist.py executable ..."
+echo "${GREEN}Step 6:${RESET} Making ${GREEN}plexorcist.py${RESET} executable ..."
 chmod +x plexorcist.py
 
 echo "${GREEN}Step 7:${RESET} Installation complete!"
