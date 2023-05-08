@@ -24,6 +24,7 @@ This script should only be executed on a Plex Media Server that you have authori
   - Logs the space reclaimed after deletion
   - Requests error handling
 - IFTTT integration (via webhook)
+- CSV report file (timestamp, number of deleted videos, GB reclaimed)
 
 ## Installation
 
