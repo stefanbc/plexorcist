@@ -32,7 +32,7 @@ This script should only be executed on a Plex Media Server that you have authori
 Run this command in your terminal
 
 ```bash
-wget -O - https://raw.githubusercontent.com/stefanbc/plexorcist/main/plexorcist.install.sh | bash
+wget -O - https://raw.githubusercontent.com/stefanbc/plexorcist/main/plexorcist.sh | bash
 ```
 
 ### Manually
