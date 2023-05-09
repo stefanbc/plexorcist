@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Main Plexorcist execution file!"""
 
-__version__ = "1.3.4"
+__version__ = "1.3.5"
 
 import os
 import argparse
