@@ -5,7 +5,7 @@ RESET=$(tput sgr0)
 VERSION=$(curl -s https://api.github.com/repos/stefanbc/plexorcist/releases/latest | grep -o '"tag_name": "[^"]*"' | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
 
 if [[ $1 == "--check" ]]; then
-  INSTALLED_VERSION=$(grep -oE "[0-9]+\.[0-9]+\.[0-9]+" plexorcist/plexorcist.py)
+  INSTALLED_VERSION=$(grep -oE "[0-9]+\.[0-9]+\.[0-9]+" ./plexorcist.py)
   if [[ $INSTALLED_VERSION == $VERSION ]]; then
     echo "${GREEN}Step 1:${RESET} Plexorcist is up to date!"
   else
