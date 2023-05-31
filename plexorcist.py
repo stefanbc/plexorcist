@@ -28,7 +28,11 @@ class Plexorcist:
         self._set_config()
         self._set_logging()
 
-        self.pushbullet = Pushbullet(self.config["pushbullet_key"])
+        # Check if the Pushbullet key has been set before making requests
+        match = re.match(r"^[A-Za-z0-9_.]+", self.config["pushbullet_key"])
+
+        if match:
+            self.pushbullet = Pushbullet(self.config["pushbullet_key"])
 
     def _set_files(self):
         """Set all needed file paths and read config file"""
@@ -337,10 +341,8 @@ class Plexorcist:
         else:
             logging.info(self.config["i18n"]["ifttt_error"])
 
-        # Check if the Pushbullet key has been set before making requests
-        match = re.match(r"^[A-Za-z0-9_.]+", self.config["pushbullet_key"])
-
-        if match:
+        # Send notification via Pushbullet
+        if self.pushbullet:
             self.pushbullet.push_note("Plexorcist", payload)
 
 
