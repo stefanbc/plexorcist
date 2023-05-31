@@ -23,6 +23,7 @@ This script should only be executed on a Plex Media Server that you have authori
   - Logs the name of the Movie or TV Show (including episode title)
   - Logs the space reclaimed after deletion
   - Requests error handling
+- Pushbullet integration (via API key)
 - IFTTT integration (via webhook)
 - CSV report file (timestamp, number of deleted videos, GB reclaimed)
 
