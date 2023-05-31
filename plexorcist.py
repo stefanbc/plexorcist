@@ -12,6 +12,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import urllib.parse
 import xmltodict
+from pushbullet import Pushbullet
 from utils import utils
 
 
@@ -22,9 +23,12 @@ class Plexorcist:
         """Init method for Plexorcist"""
 
         self.util = utils.Utils()
+
         self._set_files()
         self._set_config()
         self._set_logging()
+
+        self.pushbullet = Pushbullet(self.config["pushbullet_key"])
 
     def _set_files(self):
         """Set all needed file paths and read config file"""
@@ -57,6 +61,7 @@ class Plexorcist:
                 for library in self.config_file.get("plex", "libraries").split(",")
             ],
             "ifttt_webhook": self.config_file.get("plex", "ifttt_webhook"),
+            "pushbullet_key": self.config_file.get("plex", "pushbullet_key"),
             "whitelist": [
                 video.strip()
                 for video in self.config_file.get("plex", "whitelist").split(",")
@@ -153,8 +158,7 @@ class Plexorcist:
         """The banishing method"""
 
         # Check if the Plex Token has been set before making requests
-        pattern = r"^[A-Za-z0-9_]+"
-        match = re.match(pattern, self.config["plex_token"])
+        match = re.match(r"^[A-Za-z0-9_]+", self.config["plex_token"])
 
         if not match:
             self.update_config_file()
@@ -312,24 +316,32 @@ class Plexorcist:
             )
 
     def send_notification(self, deleted_titles, reclaimed_gb):
-        """Handles the IFTTT request"""
+        """Handles the IFTTT / Pushbullet requests"""
+
+        deleted_count = len(deleted_titles)
+        payload = (
+            f"{self.config['i18n']['removed'].format(deleted_count, reclaimed_gb)}\n"
+            + "\n".join(deleted_titles)
+        )
 
         # Send notification if IFTTT URL is set correctly
         webhook_url = urllib.parse.urlparse(self.config["ifttt_webhook"])
         if webhook_url.scheme and webhook_url.netloc:
-            deleted_count = len(deleted_titles)
-
-            notification = {
-                "value1": f"{self.config['i18n']['removed'].format(deleted_count, reclaimed_gb)}\n"
-                + "\n".join(deleted_titles)
-            }
             self.util.make_request(
-                url=self.config["ifttt_webhook"], json=notification, request_type="post"
+                url=self.config["ifttt_webhook"],
+                json={"value1": payload},
+                request_type="post",
             )
 
             logging.info(self.config["i18n"]["notification"])
         else:
             logging.info(self.config["i18n"]["ifttt_error"])
+
+        # Check if the Pushbullet key has been set before making requests
+        match = re.match(r"^[A-Za-z0-9_.]+", self.config["pushbullet_key"])
+
+        if match:
+            self.pushbullet.push_note("Plexorcist", payload)
 
 
 if __name__ == "__main__":
