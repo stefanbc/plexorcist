@@ -83,4 +83,4 @@ Please adhere to this project's [code of conduct](https://github.com/stefanbc/pl
 
 ## License
 
-[MIT](https://github.com/stefanbc/plexorcist/blob/main/LICENSE)
+[Apache License 2.0](https://github.com/stefanbc/plexorcist/blob/main/LICENSE)
