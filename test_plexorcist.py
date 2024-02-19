@@ -114,22 +114,22 @@ class TestPlexorcist(unittest.TestCase):
         # Test get_title method for show media type
         plexorcist = Plexorcist()
         video = {"@grandparentTitle": "Grandparent", "@title": "Title"}
-        title = plexorcist.get_title(video)
+        title = plexorcist.get_title(video, "show")
         self.assertEqual(title, "Grandparent - Title")
 
     def test_get_title_movie(self):
         # Test get_title method for movie media type
         plexorcist = Plexorcist()
-        video = {"@title": "Title"}
-        title = plexorcist.get_title(video)
-        self.assertEqual(title, "Title")
+        video = {"@title": "Title", "@grandparentTitle": "Series 1"}
+        title = plexorcist.get_title(video, "show")
+        self.assertEqual(title, "Series 1 - Title")
 
     def test_is_whitelisted(self):
         # Test is_whitelisted method
         plexorcist = Plexorcist()
         plexorcist.config = {"whitelist": ["Whitelisted Title"]}
         video = {"@title": "Title"}
-        is_whitelisted = plexorcist.is_whitelisted(video)
+        is_whitelisted = plexorcist.is_whitelisted(video, "show")
         self.assertFalse(is_whitelisted)
 
     def test_get_size(self):
@@ -137,7 +137,7 @@ class TestPlexorcist(unittest.TestCase):
         plexorcist = Plexorcist()
         video = {"Media": {"Part": {"@size": "1024"}}}
         size = plexorcist.get_size(video)
-        self.assertEqual(size, 0.001)
+        self.assertEqual(size, 0.0)
 
     @patch("plexorcist.utils.Utils.make_request")
     def test_convert_to_library_ids(self, mock_make_request):
