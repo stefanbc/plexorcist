@@ -45,7 +45,19 @@ class TestPlexorcist(unittest.TestCase):
 
         # Test delete_videos method
         plexorcist = Plexorcist()
-        plexorcist.config = {"whitelist": ["Whitelisted Title"]}
+        plexorcist.config = {
+            "plex_base": "http://example.com",
+            "plex_token": "token",
+            "ifttt_webhook": "",
+            "i18n": {
+                "removed": "Removed {0} videos, reclaimed {1} GB",
+                "notification": "Notification sent",
+                "ifttt_error": "IFTTT webhook error",
+            },
+            "whitelist": ["Whitelisted Title"],
+        }
+        plexorcist.pushbullet = MagicMock()
+
         watched_videos = [
             {
                 "@title": "Title",

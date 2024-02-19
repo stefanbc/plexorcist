@@ -228,10 +228,10 @@ class Plexorcist:
 
         if videos and len(videos) > 0:
             # Filter watched videos
-            watched_videos = self.filter_videos(videos=videos)
+            watched_videos = self.filter_videos(videos)
 
             # Delete watched videos and send notification
-            self.delete_videos(watched_videos=watched_videos, media_type=media_type)
+            self.delete_videos(watched_videos, media_type)
 
     def filter_videos(self, videos):
         """Filter videos"""
