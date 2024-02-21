@@ -239,7 +239,7 @@ class Plexorcist:
         # Check if video was watched and / or is older than
         def is_watched_video(video):
             return (
-                isinstance(video)
+                isinstance(video, dict)
                 and video.get("@viewCount")
                 and int(video["@viewCount"]) >= 1
                 and (
