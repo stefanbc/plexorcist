@@ -20,6 +20,7 @@ class TestPlexorcist(unittest.TestCase):
         plexorcist = Plexorcist()
         plexorcist.config_file = MagicMock()
         plexorcist.config_file.get.return_value = "1d"
+        # pylint: disable=protected-access
         older_than = plexorcist._set_older_than()
 
         # Assertions
@@ -35,7 +36,13 @@ class TestPlexorcist(unittest.TestCase):
 
         # Prepare test data
         mock_response = MagicMock()
-        mock_response.content = b'<?xml version="1.0" encoding="UTF-8"?><MediaContainer><Directory title="Cinema" key="1"></Directory><Directory title="Series" key="2"></Directory></MediaContainer>'
+        mock_response.content = (
+            b'<?xml version="1.0" encoding="UTF-8"?>'
+            b"<MediaContainer>"
+            b'<Directory title="Cinema" key="1"></Directory>'
+            b'<Directory title="Series" key="2"></Directory>'
+            b"</MediaContainer>"
+        )
         mock_make_request.return_value = mock_response
 
         # Test convert_to_library_ids method
@@ -56,7 +63,13 @@ class TestPlexorcist(unittest.TestCase):
 
         # Prepare test data
         mock_response = MagicMock()
-        mock_response.content = b'<?xml version="1.0" encoding="UTF-8"?><MediaContainer><Directory title="Cinema"></Directory><Directory title="Series"></Directory></MediaContainer>'
+        mock_response.content = (
+            b'<?xml version="1.0" encoding="UTF-8"?>'
+            b"<MediaContainer>"
+            b'<Directory title="Cinema"></Directory>'
+            b'<Directory title="Series"></Directory>'
+            b"</MediaContainer>"
+        )
         mock_make_request.return_value = mock_response
 
         # Test get_available_libraries method
@@ -123,7 +136,16 @@ class TestPlexorcist(unittest.TestCase):
 
         # Prepare test data
         mock_response = MagicMock()
-        mock_response.content = b'<?xml version="1.0" encoding="UTF-8"?><MediaContainer viewGroup="show"><Video key="12345" viewCount="1" lastViewedAt="123" grandparentTitle="Grandparent" title="Title"><Media><Part size="1024"/></Media></Video></MediaContainer>'
+        mock_response.content = (
+            b'<?xml version="1.0" encoding="UTF-8"?>'
+            b'<MediaContainer viewGroup="show">'
+            b'<Video key="1" viewCount="1" lastViewedAt="1" grandparentTitle="GPT" title="Title">'
+            b"<Media>"
+            b'<Part size="1024"/>'
+            b"</Media>"
+            b"</Video>"
+            b"</MediaContainer>"
+        )
         mock_make_request.return_value = mock_response
 
         # Test handle_videos method
@@ -213,7 +235,16 @@ class TestPlexorcist(unittest.TestCase):
 
         # Prepare test data
         mock_response = MagicMock()
-        mock_response.content = b'<?xml version="1.0" encoding="UTF-8"?><MediaContainer viewGroup="show"><Video viewCount="1" lastViewedAt="123" grandparentTitle="Grandparent" title="Title"><Media><Part size="1024"/></Media></Video></MediaContainer>'
+        mock_response.content = (
+            b'<?xml version="1.0" encoding="UTF-8"?>'
+            b'<MediaContainer viewGroup="show">'
+            b'<Video viewCount="1" lastViewedAt="123" grandparentTitle="Grandparent" title="Title">'
+            b"<Media>"
+            b'<Part size="1024"/>'
+            b"</Media>"
+            b"</Video>"
+            b"</MediaContainer>"
+        )
         mock_make_request.return_value = mock_response
         watched_videos = [
             {
