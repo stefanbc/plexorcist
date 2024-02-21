@@ -206,8 +206,8 @@ class Plexorcist:
         )
 
         if response is not None:
-            data = xmltodict.parse(response.content)
-            return data["MediaContainer"]["Directory"]
+            data = xmltodict.parse(response.content, force_list=True)
+            return data["MediaContainer"][0]["Directory"]
 
         return []
 
@@ -222,9 +222,9 @@ class Plexorcist:
     def handle_videos(self, response):
         """Handle videos"""
 
-        data = xmltodict.parse(response.content)
-        videos = data["MediaContainer"]["Video"]
-        media_type = data["MediaContainer"]["@viewGroup"]
+        data = xmltodict.parse(response.content, force_list=True)
+        videos = data["MediaContainer"][0]["Video"]
+        media_type = data["MediaContainer"][0]["@viewGroup"]
 
         if videos and len(videos) > 0:
             # Filter watched videos
@@ -239,7 +239,8 @@ class Plexorcist:
         # Check if video was watched and / or is older than
         def is_watched_video(video):
             return (
-                video.get("@viewCount")
+                type(video) is dict
+                and video.get("@viewCount")
                 and int(video["@viewCount"]) >= 1
                 and (
                     self.config["older_than"] == 0
@@ -278,7 +279,7 @@ class Plexorcist:
     def get_size(self, video):
         """Get the video size"""
 
-        return round(int(video["Media"]["Part"]["@size"]) / (1024 * 1024), 2)
+        return round(int(video["Media"][0]["Part"][0]["@size"]) / (1024 * 1024), 2)
 
     def delete_video(self, video, media_type):
         """Delete the video"""

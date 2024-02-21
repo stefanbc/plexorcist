@@ -9,11 +9,12 @@ class TestPlexorcist(unittest.TestCase):
     def test_handle_videos(self, mock_make_request):
         # Prepare test data
         mock_response = MagicMock()
-        mock_response.content = b'<?xml version="1.0" encoding="UTF-8"?><MediaContainer viewGroup="show"><Video viewCount="1" lastViewedAt="123" grandparentTitle="Grandparent" title="Title"><Media><Part size="1024"/></Media></Video></MediaContainer>'
+        mock_response.content = b'<?xml version="1.0" encoding="UTF-8"?><MediaContainer viewGroup="show"><Video key="12345" viewCount="1" lastViewedAt="123" grandparentTitle="Grandparent" title="Title"><Media><Part size="1024"/></Media></Video></MediaContainer>'
         mock_make_request.return_value = mock_response
 
         # Test handle_videos method
         plexorcist = Plexorcist()
+        plexorcist.pushbullet = MagicMock()
         plexorcist.handle_videos(mock_response)
 
         # Assertions
@@ -23,18 +24,16 @@ class TestPlexorcist(unittest.TestCase):
     def test_get_available_libraries(self, mock_make_request):
         # Prepare test data
         mock_response = MagicMock()
-        mock_response.content = b'<?xml version="1.0" encoding="UTF-8"?><MediaContainer><Directory title="Movies"></Directory></MediaContainer>'
+        mock_response.content = b'<?xml version="1.0" encoding="UTF-8"?><MediaContainer><Directory title="Cinema"></Directory><Directory title="Series"></Directory></MediaContainer>'
         mock_make_request.return_value = mock_response
 
         # Test get_available_libraries method
         plexorcist = Plexorcist()
         libraries = plexorcist.get_available_libraries()
 
-        print(libraries)
-
         # Assertions
-        self.assertEqual(len(libraries), 1)
-        self.assertEqual(libraries[0]["@title"], "Movies")
+        self.assertEqual(len(libraries), 2)
+        self.assertEqual(libraries[0]["@title"], "Cinema")
 
     @patch("plexorcist.utils.Utils.make_request")
     def test_delete_videos(self, mock_make_request):
@@ -63,7 +62,7 @@ class TestPlexorcist(unittest.TestCase):
                 "@title": "Title",
                 "@grandparentTitle": "Grandparent",
                 "@key": "/path/to/video",
-                "Media": {"Part": {"@size": "1024"}},
+                "Media": [{"Part": [{"@size": "1024"}]}],
             }
         ]
         plexorcist.delete_videos(watched_videos, "movie")
@@ -147,7 +146,7 @@ class TestPlexorcist(unittest.TestCase):
     def test_get_size(self):
         # Test get_size method
         plexorcist = Plexorcist()
-        video = {"Media": {"Part": {"@size": "1024"}}}
+        video = {"Media": [{"Part": [{"@size": "1024"}]}]}
         size = plexorcist.get_size(video)
         self.assertEqual(size, 0.0)
 
