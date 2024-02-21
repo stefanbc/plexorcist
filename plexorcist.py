@@ -188,9 +188,11 @@ class Plexorcist:
         available_libraries = self.get_available_libraries()
 
         return [
-            int(library)
-            if library.isdigit()
-            else self.get_library_id_by_name(library, available_libraries)
+            (
+                int(library)
+                if library.isdigit()
+                else self.get_library_id_by_name(library, available_libraries)
+            )
             for library in libraries
             if library
         ]
@@ -204,8 +206,8 @@ class Plexorcist:
         )
 
         if response is not None:
-            data = xmltodict.parse(response.content)
-            return data["MediaContainer"]["Directory"]
+            data = xmltodict.parse(response.content, force_list=True)
+            return data["MediaContainer"][0]["Directory"]
 
         return []
 
@@ -220,16 +222,16 @@ class Plexorcist:
     def handle_videos(self, response):
         """Handle videos"""
 
-        data = xmltodict.parse(response.content)
-        videos = data["MediaContainer"]["Video"]
-        media_type = data["MediaContainer"]["@viewGroup"]
+        data = xmltodict.parse(response.content, force_list=True)
+        videos = data["MediaContainer"][0]["Video"]
+        media_type = data["MediaContainer"][0]["@viewGroup"]
 
         if videos and len(videos) > 0:
             # Filter watched videos
-            watched_videos = self.filter_videos(videos=videos)
+            watched_videos = self.filter_videos(videos)
 
             # Delete watched videos and send notification
-            self.delete_videos(watched_videos=watched_videos, media_type=media_type)
+            self.delete_videos(watched_videos, media_type)
 
     def filter_videos(self, videos):
         """Filter videos"""
@@ -237,7 +239,8 @@ class Plexorcist:
         # Check if video was watched and / or is older than
         def is_watched_video(video):
             return (
-                video.get("@viewCount")
+                isinstance(video, dict)
+                and video.get("@viewCount")
                 and int(video["@viewCount"]) >= 1
                 and (
                     self.config["older_than"] == 0
@@ -252,43 +255,49 @@ class Plexorcist:
 
         return watched_videos
 
+    def get_title(self, video, media_type):
+        """Get the video title"""
+
+        if media_type == "show":
+            series = video.get("@grandparentTitle", "")
+            return f"{series} - {video['@title']}"
+
+        return video["@title"]
+
+    def is_whitelisted(self, video, media_type):
+        """Check if the video is whitelisted"""
+
+        title = self.get_title(video, media_type)
+        check = (
+            title in self.config["whitelist"]
+            or video.get("@grandparentTitle", "") in self.config["whitelist"]
+        )
+        if check:
+            logging.info(self.config["i18n"]["whitelisted"].format(title))
+        return check
+
+    def get_size(self, video):
+        """Get the video size"""
+
+        return round(int(video["Media"][0]["Part"][0]["@size"]) / (1024 * 1024), 2)
+
+    def delete_video(self, video, media_type):
+        """Delete the video"""
+
+        self.util.make_request(
+            url=self.config["plex_base"] + video["@key"],
+            headers={"X-Plex-Token": self.config["plex_token"]},
+            request_type="delete",
+        )
+        return self.get_size(video), self.get_title(video, media_type)
+
     def delete_videos(self, watched_videos, media_type):
         """Delete watched videos and send notification"""
 
-        # Get the video title
-        def get_title(video):
-            if media_type == "show":
-                series = video.get("@grandparentTitle", "")
-                return f"{series} - {video['@title']}"
-
-            return video["@title"]
-
-        # Check if the video is whitelisted
-        def is_whitelisted(video):
-            title = get_title(video)
-            check = (
-                title in self.config["whitelist"]
-                or video.get("@grandparentTitle", "") in self.config["whitelist"]
-            )
-            if check:
-                logging.info(self.config["i18n"]["whitelisted"].format(title))
-            return check
-
-        # Get the video size
-        def get_size(video):
-            return round(int(video["Media"]["Part"]["@size"]) / (1024 * 1024), 2)
-
-        # Delete the video
-        def delete_video(video):
-            self.util.make_request(
-                url=self.config["plex_base"] + video["@key"],
-                headers={"X-Plex-Token": self.config["plex_token"]},
-                request_type="delete",
-            )
-            return get_size(video), get_title(video)
-
         deleted_videos = [
-            delete_video(video) for video in watched_videos if not is_whitelisted(video)
+            self.delete_video(video, media_type)
+            for video in watched_videos
+            if not self.is_whitelisted(video, media_type)
         ]
 
         if deleted_videos:
