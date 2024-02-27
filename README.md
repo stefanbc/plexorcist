@@ -77,9 +77,9 @@ See [CONTRIBUTING.md](https://github.com/stefanbc/plexorcist/blob/main/CONTRIBUT
 
 Please adhere to this project's [code of conduct](https://github.com/stefanbc/plexorcist/blob/main/CODE_OF_CONDUCT.md).
 
-## Authors
+## Contributors
 
-- [@stefanbc](https://www.github.com/stefanbc)
+[<img src="https://github.com/stefanbc.png" width="60px;"/><br /><sub><a href="https://github.com/stefanbc">stefanbc</a></sub>](https://github.com/stefanbc/plexorcist)
 
 ## License
 
